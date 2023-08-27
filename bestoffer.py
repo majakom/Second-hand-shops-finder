@@ -3,6 +3,7 @@ from ip2geotools.databases.noncommercial import DbIpCity
 import json
 from urllib.request import urlopen
 import os
+import math
 def prRed(skk): print("\033[91m {}\033[00m" .format(skk))
 def prGreen(skk): print("\033[92m {}\033[00m" .format(skk))
 
@@ -18,8 +19,10 @@ def Main():
         match choice:
             case 0:
                 YourLocation = GetLocationIP()
+                YourLocation.AreaChoice()
             case 1:
                 YourLocation = EnterLocation()
+                YourLocation.AreaChoice()
             case 2:
                 exit()
 
@@ -72,6 +75,7 @@ def GetLocationIP():
                         exit()
                     case 1:
                         YourLocation = EnterLocation()
+                        YourLocation.AreaChoice()
             case 1:
                 cityData = city.split(sep = "(")
                 cityData[1] = cityData[1].replace(")", "")
@@ -99,7 +103,7 @@ def EnterLocation():
         print("Enter:")
         if street != "0" and street != None:
             prRed("(0) the name of the street")
-            prGreen("(1) Continue")
+            prGreen("(1) Skip and continue")
         else:    
             print("(0) the name of the street")
         choice = CheckInput()
@@ -156,7 +160,6 @@ def EnterLocation():
                         print(address)
                     else:
                         address = country+", "+city+", "+street
-                input()
                 return YourLocation
             case "exit":
                 exit()
@@ -166,6 +169,34 @@ class Location:
         self.lat = lat
         self.long = long
         self.address = {}
+        self.chosenArea = []
+    def AreaChoice(self):
+        while True:
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print("=======Choose Your area======")
+            print("(0) Enter the maximum distance from You")
+            print("(1) Return")
+            choice = CheckInput()
+            match choice:
+                case 0:
+                    self.AreaKM()
+                case 1:
+                    break
+    def AreaKM(self):
+        while True:
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print("(0) Return")
+            print("Enter the number of the km:")
+            nrKM = CheckInput()
+            if nrKM == 0:
+                break            
+            ratioLat = 1/110.74
+            ratioLong = (1/111.32)*math.acos(ratioLat)
+            distanceNrLat = nrKM*ratioLat
+            distanceNrLong = nrKM*ratioLong
+            self.chosenArea.append(distanceNrLat)
+            self.chosenArea.append(distanceNrLong)
+            print(self.chosenArea[0], self.chosenArea[1])
 
 
 Main()
