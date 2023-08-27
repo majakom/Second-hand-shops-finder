@@ -36,20 +36,17 @@ def GetLocationIP():
     while True:
         urlopen("http://ipinfo.io/json")
         data = json.load(urlopen("http://ipinfo.io/json"))
-        print(data)
         ip = data['ip']
-        print(ip)
         res = DbIpCity.get(ip, api_key="free")
         latitude = res.latitude
         longitude = res.longitude
         city = res.city
         region = res.region
         country = res.country
-        print(latitude)
-        geolocator = Nominatim(user_agent="geoapiExercises")
+        geolocator = Nominatim(user_agent="GetLoc")
         location = geolocator.reverse(str(latitude)+","+str(longitude))
-        print(location)
         length = len(str(location))
+        os.system('cls' if os.name == 'nt' else 'clear')
         print('\n'+"="*length)
         print(location)
         print("="*length+"\n")
@@ -65,6 +62,7 @@ def GetLocationIP():
         choice = CheckInput()
         match choice:
             case 0:
+                os.system('cls' if os.name == 'nt' else 'clear')
                 print("Would You like to enter your location?")
                 print("(0) No - exit")
                 print("(1) Yes")
@@ -75,7 +73,6 @@ def GetLocationIP():
                     case 1:
                         YourLocation = EnterLocation()
             case 1:
-                #print(res.raw)
                 cityData = city.split(sep = "(")
                 cityData[1] = cityData[1].replace(")", "")
                 YourLocation = Location(latitude, longitude)
@@ -87,7 +84,6 @@ def GetLocationIP():
                 YourLocation.address["building"] = None
                 YourLocation.address["location"]= location
                 return YourLocation
-    
 
 def EnterLocation():
     street = None
@@ -171,15 +167,5 @@ class Location:
         self.long = long
         self.address = {}
 
-
-
-
-    
-#geolocator = Nominatim(user_agent="MyApp")
-#address  = ""
-#location = geolocator.geocode(address, addressdetails=True)
-#print(location.raw)
-#print()
-#print(location.longitude)
 
 Main()
