@@ -125,11 +125,11 @@ def EnterLocation():
                     match choice:
                         case 0:
                             building = None
-                            address = country+", "+city+", "+street
+                            address = ", ".join(country, city, street)
                         case 1:
                             print("Enter the number of the building:")
                             building = input()
-                            address = country+", "+city+", "+street+" "+building
+                            address = ", ".join(country, city, street, building)
                     pass
             case 1:
                 location = geolocator.geocode(address, addressdetails=True)
@@ -148,18 +148,18 @@ def EnterLocation():
                     YourLocation.address["district"] = district
                     os.system('cls' if os.name == 'nt' else 'clear')
                     if building != None:
-                        address = country+", "+city+", "+district+", "+street+" "+building
+                        address = ", ".join(country, city, district, street, building)
                         print(address)
                     else:
-                        address = country+", "+city+", "+district+", "+street
+                        address = ", ".join(country, city, district, street)
                 except:
                     YourLocation.address["district"] = None
                     os.system('cls' if os.name == 'nt' else 'clear')
                     if building != None:
-                        address = country+", "+city+", "+street+" "+building
+                        address = ", ".join(country, city, street, building)
                         print(address)
                     else:
-                        address = country+", "+city+", "+street
+                        address = ", ".join(country, city, street)
                 return YourLocation
             case "exit":
                 exit()
@@ -179,12 +179,12 @@ class Location:
             choice = CheckInput()
             match choice:
                 case 0:
+                    os.system('cls' if os.name == 'nt' else 'clear')
                     self.AreaKM()
                 case 1:
                     break
     def AreaKM(self):
         while True:
-            os.system('cls' if os.name == 'nt' else 'clear')
             print("(0) Return")
             print("Enter the number of the km:")
             nrKM = CheckInput()
@@ -196,7 +196,12 @@ class Location:
             distanceNrLong = nrKM*ratioLong
             self.chosenArea.append(distanceNrLat)
             self.chosenArea.append(distanceNrLong)
-            print(self.chosenArea[0], self.chosenArea[1])
-
+            self.Shops()
+    def Shops(self):
+        geolocator = Nominatim(user_agent="name")
+        address = ", ".join([self.address["country"], self.address["city"], "second hand"])
+        print(address)
+        location = geolocator.geocode(address)
+        print(location.address)
 
 Main()
