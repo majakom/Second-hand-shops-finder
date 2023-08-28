@@ -199,9 +199,112 @@ class Location:
             self.Shops()
     def Shops(self):
         geolocator = Nominatim(user_agent="name")
-        address = ", ".join([self.address["country"], self.address["city"], "second hand"])
-        print(address)
-        location = geolocator.geocode(address)
-        print(location.address)
+        address1 = ", ".join(["second hand", self.address["city"]])
+        address2 = ", ".join(["używana odzież", self.address["city"]])
+        address3 = ", ".join(["lumpeks", self.address["city"]])
+        address4 = ", ".join(["sklep odzież", self.address["city"]])
+        address5 = ", ".join(["sklep z ubraniami używanymi", self.address["city"]])
+        address6 = ", ".join(["lump", self.address["city"]])
+        address7 = ", ".join(["sklep z odzieżą używaną", self.address["city"]])
+        address8 = ", ".join(["sklep z odzieżą", "lumpeks", self.address["city"]])
+        address9 = ", ".join(["sklep odzieżowy", "używana", self.address["city"]])
+        address10 = ", ".join(["lumpex", self.address["city"]])
+        address11 = ", ".join(["używana", self.address["city"]])
+        address12 = ", ".join(["vintage", "używana", self.address["city"]])
+        address13 = ", ".join(["sklep", "odzież", "używana", self.address["city"]])
+        address14 = ", ".join(["sklep odzieżowy", "lumpeks", self.address["city"]])
+        address15 = ", ".join(["second hand shop", self.address["city"]])
+        
+        location1 = geolocator.geocode(address1, exactly_one =False)
+        location2 = geolocator.geocode(address2, exactly_one =False)
+        location3 = geolocator.geocode(address3, exactly_one =False)
+        location4 = geolocator.geocode(address4, exactly_one =False)
+        location5 = geolocator.geocode(address5, exactly_one =False)
+        location6 = geolocator.geocode(address6, exactly_one =False)
+        location7 = geolocator.geocode(address7, exactly_one =False)
+        location8 = geolocator.geocode(address8, exactly_one =False)
+        location9 = geolocator.geocode(address9, exactly_one =False)
+        location10 = geolocator.geocode(address10, exactly_one =False)
+        location11 = geolocator.geocode(address11, exactly_one =False)
+        location12 = geolocator.geocode(address12, exactly_one =False)
+        location13 = geolocator.geocode(address13, exactly_one =False)
+        location14 = geolocator.geocode(address14, exactly_one =False)
+        location15 = geolocator.geocode(address15, exactly_one =False)
+        try:
+            for loc in location1:
+                print(loc.address)
+        except:
+            pass
+        try:
+            for loc in location2:
+                print(loc.address)
+        except:
+            pass
+        try:
+            for loc in location3:
+                print(loc.address)
+        except:
+            pass
+        try:
+            for loc in location4:
+                print(loc.address)
+        except:
+            pass
+        try:
+            for loc in location5:
+                print(loc.address)
+        except:
+            pass
+        try:
+            for loc in location6:
+                print(loc.address)
+        except:
+            pass
+        try:
+            for loc in location7:
+                print(loc.address)
+        except:
+            pass
+        try:
+            for loc in location8:
+                print(loc.address)
+        except:
+            pass
+        try:
+            for loc in location9:
+                print(loc.address)
+        except:
+            pass
+        try:
+            for loc in location10:
+                print(loc.address)
+        except:
+            pass
+        try:
+            for loc in location11:
+                print(loc.address)
+        except:
+            pass
+        try:
+            for loc in location12:
+                print(loc.address)
+        except:
+            pass
+        try:
+            for loc in location13:
+                print(loc.address)
+        except:
+            pass
+        try:
+            for loc in location14:
+                print(loc.address)
+        except:
+            pass
+        try:
+            for loc in location15:
+                print(loc.address)
+        except:
+            pass
+        input()
 
 Main()
