@@ -4,6 +4,8 @@ import json
 from urllib.request import urlopen
 from ip2geotools.databases.noncommercial import DbIpCity
 from geopy.geocoders import Nominatim
+def prRed(skk): print("\033[91m {}\033[00m" .format(skk))
+def prGreen(skk): print("\033[92m {}\033[00m" .format(skk))
 
 def Main():
     while True:
@@ -15,7 +17,7 @@ def Main():
         choice = CheckInputInt()
         match choice:
             case 0:
-                pass
+                YourLocation = EnterYourLocation()
             case 1:
                 YourLocation = GetYourLocationIP()
             case 2:
@@ -88,7 +90,75 @@ def GetYourLocationIP():
                 return YourLocation
             case 1:
                 break
-            
+
+def EnterYourLocation():
+    street = None
+    building = None
+    country = "Poland"
+    addressList = []
+    addressList.append(country)
+    geolocator = Nominatim(user_agent="MyApp")
+    
+    while True:
+        if street == None and building == None:
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print("Enter the name of the city or (0) return")
+            city = input()
+            if city == "0":
+                break
+            addressList.append(city)
+
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("=========Choose optionally:=========")
+        if street == None or street == "0":
+            print("(0) Enter the name of the street")
+        else:
+            prRed("(0) Enter the name of the street")
+        if building == None or building == "0":
+            print("(1) Enter the number of the building")
+        else:
+            prRed("(1) Enter the number of the building")
+        if (building != None and building != "0") or (street != None and street != "0"):
+            prGreen("(2) Skip and/or continue")
+        choice = CheckInputInt()
+        os.system('cls' if os.name == 'nt' else 'clear')
+        match choice:
+            case 0:
+                print("Enter the name of the street or (0) return:")
+                street = input()
+                if street == "0":
+                    pass
+                else:
+                    addressList.append(street)
+            case 1:
+                print("Enter the number of the building or (0) return")
+                building = input()
+                if building == "0":
+                    pass
+                else:
+                    addressList.append(building)
+            case 2:
+                address = ", ".join(addressList)
+                location = geolocator.geocode(address, addressdetails=True)
+                data = location.raw
+                data = data['address']
+                state = data['state']
+                YourLocation = YourAddress(location.latitude, location.longitude)
+                YourLocation.address["country"] = country
+                YourLocation.address["region"] = state
+                YourLocation.address["city"] = city
+                YourLocation.address["street"] = street
+                YourLocation.address["building"] = building
+                YourLocation.address["location"]= location
+                try:
+                    district = data['suburb']
+                    print(district)
+                    YourLocation.address["district"] = district
+                    input()
+                except:
+                    YourLocation.address["district"] = None
+                return YourLocation
+
 class YourAddress:
     def __init__(self, latitude, longitude):
         self.latitude = latitude
