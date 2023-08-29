@@ -22,7 +22,7 @@ def Main():
                 YourLocation = GetYourLocationIP()
             case 2:
                 exit()
-
+        Menu(YourLocation)
 
 def CheckInputInt():
     while True:
@@ -159,13 +159,276 @@ def EnterYourLocation():
                     YourLocation.address["district"] = None
                 return YourLocation
 
+def Menu(YourLocation):
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print("========Choose:==========")
+    print("(0) Find Shops in Your Area")
+    print("(1) Select a shop from Your database")
+    print("(2) Add a shop to Your database")
+    print("(3) Exit")
+    choice = CheckInputInt()
+    match choice:
+        case 0:
+            YourLocation.AreaChoice()
+
+
 class YourAddress:
     def __init__(self, latitude, longitude):
         self.latitude = latitude
         self.longitude = longitude
         self.address = {}
-
-        
+        self.locations = []
+    def AreaChoice(self):
+        while True:
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print("====================Choose:=====================")
+            print("(0) Enter the maximum distance from shop to You")
+            print("(1) Search via the district You are currently in")
+            print("(2) Return")
+            choice = CheckInputInt()
+            os.system('cls' if os.name == 'nt' else 'clear')
+            match choice:
+                case 0:
+                    self.AreaKM()
+                case 1:
+                    self.findShopsInDistrict()
+                case 2:
+                    break
+    def AreaKM(self):
+        while True:
+            print("Enter the number of the km or (0) return:")
+            self.radius = CheckInputFloat()
+            if self.radius == 0:
+                break            
+            self.findShopsKM()
+    def findShopsKM(self):
+        geolocator = Nominatim(user_agent="name")
+        address1 = ", ".join(["second hand", self.address["city"]])
+        address2 = ", ".join(["używana odzież", self.address["city"]])
+        address3 = ", ".join(["lumpeks", self.address["city"]])
+        address4 = ", ".join(["sklep odzież", self.address["city"]])
+        address5 = ", ".join(["sklep z ubraniami używanymi", self.address["city"]])
+        address6 = ", ".join(["lump", self.address["city"]])
+        address7 = ", ".join(["sklep z odzieżą używaną", self.address["city"]])
+        address8 = ", ".join(["sklep z odzieżą", "lumpeks", self.address["city"]])
+        address9 = ", ".join(["sklep odzieżowy", "używana", self.address["city"]])
+        address10 = ", ".join(["lumpex", self.address["city"]])
+        address11 = ", ".join(["używana", self.address["city"]])
+        address12 = ", ".join(["vintage", "sklep z odzieżą używaną", self.address["city"]])
+        address13 = ", ".join(["sklep", "odzież", "używana", self.address["city"]])
+        address14 = ", ".join(["sklep odzieżowy", "lumpeks", self.address["city"]])
+        address15 = ", ".join(["second hand shop", self.address["city"]])
+        address16 = ", ".join(["komis", "sklep z odzieżą używaną", self.address["city"]])
+        location1 = geolocator.geocode(address1, exactly_one =False)
+        location2 = geolocator.geocode(address2, exactly_one =False)
+        location3 = geolocator.geocode(address3, exactly_one =False)
+        location4 = geolocator.geocode(address4, exactly_one =False)
+        location5 = geolocator.geocode(address5, exactly_one =False)
+        location6 = geolocator.geocode(address6, exactly_one =False)
+        location7 = geolocator.geocode(address7, exactly_one =False)
+        location8 = geolocator.geocode(address8, exactly_one =False)
+        location9 = geolocator.geocode(address9, exactly_one =False)
+        location10 = geolocator.geocode(address10, exactly_one =False)
+        location11 = geolocator.geocode(address11, exactly_one =False)
+        location12 = geolocator.geocode(address12, exactly_one =False)
+        location13 = geolocator.geocode(address13, exactly_one =False)
+        location14 = geolocator.geocode(address14, exactly_one =False)
+        location15 = geolocator.geocode(address15, exactly_one =False)
+        location16 = geolocator.geocode(address16, exactly_one =False)
+        try:
+            for loc in location1:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location2:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location3:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location4:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location5:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location6:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location7:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location8:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location9:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location10:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location11:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location12:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location13:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location14:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location15:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location16:
+                self.locations.append(loc)
+        except:
+            pass  
+    def findShopsInDistrict(self):
+        geolocator = Nominatim(user_agent="name")
+        address1 = ", ".join(["second hand", self.address['district'], self.address["city"]])
+        address2 = ", ".join(["używana odzież", self.address['district'], self.address["city"]])
+        address3 = ", ".join(["lumpeks", self.address['district'], self.address["city"]])
+        address4 = ", ".join(["sklep odzież", self.address['district'], self.address["city"]])
+        address5 = ", ".join(["sklep z ubraniami używanymi", self.address['district'], self.address["city"]])
+        address6 = ", ".join(["lump", self.address['district'], self.address["city"]])
+        address7 = ", ".join(["sklep z odzieżą używaną", self.address['district'], self.address["city"]])
+        address8 = ", ".join(["sklep z odzieżą", "lumpeks", self.address['district'], self.address["city"]])
+        address9 = ", ".join(["sklep odzieżowy", "używana", self.address['district'], self.address["city"]])
+        address10 = ", ".join(["lumpex", self.address['district'], self.address["city"]])
+        address11 = ", ".join(["używana", self.address['district'], self.address["city"]])
+        address12 = ", ".join(["vintage", "sklep z odzieżą używaną", self.address['district'], self.address["city"]])
+        address13 = ", ".join(["sklep", "odzież", "używana", self.address['district'], self.address["city"]])
+        address14 = ", ".join(["sklep odzieżowy", "lumpeks", self.address['district'], self.address["city"]])
+        address15 = ", ".join(["second hand shop", self.address['district'], self.address["city"]])
+        address16 = ", ".join(["komis", "sklep z odzieżą używaną", self.address["city"]])
+        location1 = geolocator.geocode(address1, exactly_one =False)
+        location2 = geolocator.geocode(address2, exactly_one =False)
+        location3 = geolocator.geocode(address3, exactly_one =False)
+        location4 = geolocator.geocode(address4, exactly_one =False)
+        location5 = geolocator.geocode(address5, exactly_one =False)
+        location6 = geolocator.geocode(address6, exactly_one =False)
+        location7 = geolocator.geocode(address7, exactly_one =False)
+        location8 = geolocator.geocode(address8, exactly_one =False)
+        location9 = geolocator.geocode(address9, exactly_one =False)
+        location10 = geolocator.geocode(address10, exactly_one =False)
+        location11 = geolocator.geocode(address11, exactly_one =False)
+        location12 = geolocator.geocode(address12, exactly_one =False)
+        location13 = geolocator.geocode(address13, exactly_one =False)
+        location14 = geolocator.geocode(address14, exactly_one =False)
+        location15 = geolocator.geocode(address15, exactly_one =False)
+        location16 = geolocator.geocode(address16, exactly_one =False)
+        try:
+            for loc in location1:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location2:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location3:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location4:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location5:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location6:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location7:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location8:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location9:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location10:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location11:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location12:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location13:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location14:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location15:
+                self.locations.append(loc)
+        except:
+            pass
+        try:
+            for loc in location16:
+                self.locations.append(loc)
+        except:
+            pass 
 Main()        
 
         
