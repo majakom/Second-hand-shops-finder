@@ -4,6 +4,7 @@ import json
 from urllib.request import urlopen
 from ip2geotools.databases.noncommercial import DbIpCity
 from geopy.geocoders import Nominatim
+from geopy.distance import geodesic as GD
 def prRed(skk): print("\033[91m {}\033[00m" .format(skk))
 def prGreen(skk): print("\033[92m {}\033[00m" .format(skk))
 
@@ -41,6 +42,17 @@ def CheckInputFloat():
         except:
             print("Wrong input. Try again:")
     return choice
+
+def CheckInputForExit():
+    while True:
+        try:
+            choice = int(input())
+            return choice
+        except:
+            choice = input()
+            choice.lower()
+            if choice == 'exit':
+                return choice
 
 def GetYourLocationIP():
     latLongData = []
@@ -170,6 +182,96 @@ def Menu(YourLocation):
     match choice:
         case 0:
             YourLocation.AreaChoice()
+        case 1:
+            YourShop = AddShopsManual(YourLocation)
+            YourShop.AddShopsSalesData()
+
+        case 3:
+            exit()
+
+def LoadPickleOut():
+        listOfAllShops = []
+        try:
+            if os.path.isfile("shopsData.pkl"):
+                with open('shopsData.pkl', 'rb') as shopsData:
+                    listOfAllShops = pickle.load(shopsData)
+                return listOfAllShops
+        except:
+            print("You have 0 shops in Your database")
+            pass
+def UploadDataOut(listOfAllShops):
+    with open('shopsData.pkl', 'wb') as shopsData:
+        pickle.dump(listOfAllShops, shopsData)
+def AddShopsManual(YourLocation):
+    geolocator = Nominatim(user_agent="MyApp")
+    country = YourLocation.address['country']
+    addressList = []
+    addressList.append(country)
+    while True:
+        listOfAllShops = LoadPickleOut()
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("///////////type 'exit' to return////////////")
+        print("Is the new shop in the same city You are in?")
+        print("(0) Yes")
+        print("(1) No - enter the name of the city")
+        choice = CheckInputForExit()
+        match choice:
+            case 0:
+                city = YourLocation.address['city']
+            case 1:
+                city = input()
+            case 'exit':
+                break
+        addressList.append(city)
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("/////////////type 'exit' to return////////////")
+        print("Is the new shop on the same street You are on?")
+        print("(0) Yes")
+        print("(1) No - enter the name of the street")
+        choice = CheckInputForExit()
+        match choice:
+            case 0:
+                street = YourLocation.address['street']
+            case 1:
+                street = input()
+            case 'exit':
+                break
+        addressList.append(street)
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("////////////type 'exit' to return///////////////")
+        print("Is the new shop in the same building You are in?")
+        print("(0) Yes")
+        print("(1) No - enter the number of the building")
+        choice = CheckInputForExit()
+        os.system('cls' if os.name == 'nt' else 'clear')
+        match choice:
+            case 0:
+                if YourLocation.address['building'] == None:
+                    print("The number of the building is unknown")
+                    print("Enter it now:")
+                    building = input()
+                else:
+                    building = YourLocation.address['building']
+            case 1:
+                building = input()
+            case 'exit':
+                break
+        addressList.append(building)
+        address = ", ".join(addressList)
+        location = geolocator.geocode(address, addressdetails=True)
+        data = location.raw
+        data = data['address']
+        state = data['state']
+        YourShop = SecondHandShop(location.latitude, location.longitude)
+        YourShop.address["country"] = country
+        YourShop.address["region"] = state
+        YourShop.address["city"] = city
+        YourShop.address["street"] = street
+        YourShop.address["building"] = building
+        YourShop.address["location"]= location
+        return YourShop
+
+                
 
 
 class YourAddress:
@@ -178,6 +280,8 @@ class YourAddress:
         self.longitude = longitude
         self.address = {}
         self.locations = []
+        self.distance = []
+        self.closestLocations = []
     def AreaChoice(self):
         while True:
             os.system('cls' if os.name == 'nt' else 'clear')
@@ -314,7 +418,8 @@ class YourAddress:
             for loc in location16:
                 self.locations.append(loc)
         except:
-            pass  
+            pass 
+        self.getDistanceKM() 
     def findShopsInDistrict(self):
         geolocator = Nominatim(user_agent="name")
         address1 = ", ".join(["second hand", self.address['district'], self.address["city"]])
@@ -428,7 +533,109 @@ class YourAddress:
             for loc in location16:
                 self.locations.append(loc)
         except:
-            pass 
+            pass
+        self.DistrictSearch() 
+    def getDistanceKM(self):
+        os.system('cls' if os.name == 'nt' else 'clear')
+        for loc in self.locations:
+            self.distance.append(GD((str(loc.latitude),str(loc.longitude)), (self.latitude,self.longitude)).km)
+        for id in range(len(self.locations)):
+            if self.distance[id] <= self.radius and not (self.locations[id] in self.closestLocations):
+                self.closestLocations.append(self.locations[id])  
+        for id in range(len(self.closestLocations)):
+            print("({}) {} {} {}".format(id, self.closestLocations[id], str(self.closestLocations[id].latitude), str(self.closestLocations[id].longitude)))
+        print("\n=====================================")
+        print("(0) Choose a shop and check the details")
+        print("(1) I didn't find my shop")
+        choice = CheckInputInt()
+        os.system('cls' if os.name == 'nt' else 'clear')
+        match choice:
+            case 0:
+                for id in range(len(self.closestLocations)):
+                    print("({}) {} {} {}".format(id, self.closestLocations[id], str(self.closestLocations[id].latitude), str(self.closestLocations[id].longitude)))
+                print("\n=====================================")
+                print("Enter the number of the shop:")
+                choice = CheckInputInt()
+            case 1:
+                print("(0) Add a shop")
+                print("(1) Return")
+                choice = CheckInputInt()
+    def DistrictSearch(self):
+        self.locations = self.closestLocations
+        for id in range(len(self.closestLocations)):
+            print("({}) {}".format(id, self.closestLocations[id]))
+        print("\n=====================================")
+        print("(0) Choose a shop and check the details")
+        print("(1) I didn't find my shop")
+        choice = CheckInputInt()
+        os.system('cls' if os.name == 'nt' else 'clear')
+        match choice:
+            case 0:
+                for id in range(len(self.closestLocations)):
+                    print("({}) {}".format(id, self.closestLocations[id]))
+                print("\n=====================================")
+                print("Enter the number of the shop:")
+                choice = CheckInputInt()
+            case 1:
+                print("(0) Add a shop")
+                print("(1) Return")
+                choice = CheckInputInt()
+
+class SecondHandShop:
+    def __init__(self, latitude, longitude):
+        self.latitude = latitude
+        self.longitude = longitude
+        self.address = {}
+        self.prizes = {}
+    def AddShopsSalesData(self):
+        while True:
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print("Add data:")
+            print("(0) Add prizes")
+            print("(1) Add delivery day")
+            print("(2) Return")
+            choice = CheckInputInt()
+            match choice:
+                case 0:
+                    self.AddPrizes(self)
+                case 1:
+                    self.AddDeliveryDay(self)
+                case 2:
+                    break
+    def AddDeliveryDay(self):
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("Choose the day of the delivery:")
+        print("(0) Monday")
+        print("(1) Tuesday")
+        print("(2) Wednesday")
+        print("(3) Thursday")
+        print("(4) Friday")
+        print("(5) Saturday")
+        print("(6) Sunday")
+        print("(7) Return")
+        choice = CheckInputInt()
+        match choice:
+            case 0:
+                delivery = "Monday"
+            case 1:
+                delivery = "Tuesday"
+            case 2:
+                delivery = "Wednesday"
+            case 3:
+                delivery = "Tuesday"
+            case 4:
+                delivery = "Friday"
+            case 5:
+                delivery = "Saturday"
+            case 6:
+                delivery = "Sunday"
+            case 7:
+                return
+        self.prizes['delivery day'] = delivery   
+    #def AddPrizes(self):
+
+
+
 Main()        
 
         
