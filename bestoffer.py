@@ -4,6 +4,7 @@ import json
 from urllib.request import urlopen
 import os
 import math
+from geopy.distance import geodesic as GD
 def prRed(skk): print("\033[91m {}\033[00m" .format(skk))
 def prGreen(skk): print("\033[92m {}\033[00m" .format(skk))
 
@@ -15,7 +16,7 @@ def Main():
         print("(0) Via IP address")
         print("(1) Enter your location (more accurate)")
         print("(2) Exit")
-        choice = CheckInput()
+        choice = CheckInputInt()
         match choice:
             case 0:
                 YourLocation = GetLocationIP()
@@ -26,7 +27,7 @@ def Main():
             case 2:
                 exit()
 
-def CheckInput():
+def CheckInputInt():
     while True:
         try:
             choice = int(input())
@@ -34,7 +35,14 @@ def CheckInput():
         except:
             print("Wrong input. Try again:")
     return choice
-
+def CheckInputFloat():
+    while True:
+        try:
+            choice = float(input())
+            break
+        except:
+            print("Wrong input. Try again:")
+    return choice
 def GetLocationIP():
     while True:
         urlopen("http://ipinfo.io/json")
@@ -62,14 +70,14 @@ def GetLocationIP():
         print("Is it close enough to You?")
         print("(0) No")
         print("(1) Yes")
-        choice = CheckInput()
+        choice = CheckInputInt()
         match choice:
             case 0:
                 os.system('cls' if os.name == 'nt' else 'clear')
                 print("Would You like to enter your location?")
                 print("(0) No - exit")
                 print("(1) Yes")
-                choice = CheckInput()
+                choice = CheckInputInt()
                 match choice:
                     case 0:
                         exit()
@@ -94,19 +102,22 @@ def EnterLocation():
     building = None
     country = "Poland"
     geolocator = Nominatim(user_agent="MyApp")
+    addressList = []
+    addressList.append(country)
     while True:
         if street != "0" and street == None:
             os.system('cls' if os.name == 'nt' else 'clear')
             print("Enter the name of the city:")
             city = input()
+            addressList.append(city)
         os.system('cls' if os.name == 'nt' else 'clear')
         print("Enter:")
         if street != "0" and street != None:
             prRed("(0) the name of the street")
-            prGreen("(1) Skip and continue")
+            prGreen("(1) Skip and/or continue")
         else:    
             print("(0) the name of the street")
-        choice = CheckInput()
+        choice = CheckInputInt()
         os.system('cls' if os.name == 'nt' else 'clear')
         match choice:
             case 0:
@@ -116,20 +127,22 @@ def EnterLocation():
                 if street == "0":
                     pass
                 else:
+                    addressList.append(street)
                     print("\n=================================================")
                     print("Would You like to add the number of the building?")
                     print("(0) No")
                     print("(1) Yes")
-                    choice = CheckInput()
+                    choice = CheckInputInt()
                     os.system('cls' if os.name == 'nt' else 'clear')
                     match choice:
                         case 0:
                             building = None
-                            address = ", ".join(country, city, street)
+                            address = ", ".join(addressList)
                         case 1:
                             print("Enter the number of the building:")
                             building = input()
-                            address = ", ".join(country, city, street, building)
+                            addressList.append(building)
+                            address = ", ".join(addressList)
                     pass
             case 1:
                 location = geolocator.geocode(address, addressdetails=True)
@@ -144,39 +157,33 @@ def EnterLocation():
                 YourLocation.address["building"] = building
                 YourLocation.address["location"]= location
                 try:
+                    os.system('cls' if os.name == 'nt' else 'clear')
                     district = data['neighbourhood']
                     YourLocation.address["district"] = district
-                    os.system('cls' if os.name == 'nt' else 'clear')
-                    if building != None:
-                        address = ", ".join(country, city, district, street, building)
-                        print(address)
-                    else:
-                        address = ", ".join(country, city, district, street)
+                    addressList.append(district)
+                    address = ", ".join(addressList)
                 except:
-                    YourLocation.address["district"] = None
                     os.system('cls' if os.name == 'nt' else 'clear')
-                    if building != None:
-                        address = ", ".join(country, city, street, building)
-                        print(address)
-                    else:
-                        address = ", ".join(country, city, street)
+                    YourLocation.address["district"] = None
+                    address = ", ".join(addressList)
                 return YourLocation
-            case "exit":
-                exit()
             
 class Location:
     def __init__(self, lat, long):
+        self.locations = []
+        self.closestLocations = []
+        self.Distance = []
         self.lat = lat
         self.long = long
         self.address = {}
-        self.chosenArea = []
     def AreaChoice(self):
         while True:
             os.system('cls' if os.name == 'nt' else 'clear')
             print("=======Choose Your area======")
             print("(0) Enter the maximum distance from You")
-            print("(1) Return")
-            choice = CheckInput()
+            print("(1) Search via district")
+            print("(2) Return")
+            choice = CheckInputInt()
             match choice:
                 case 0:
                     os.system('cls' if os.name == 'nt' else 'clear')
@@ -187,17 +194,11 @@ class Location:
         while True:
             print("(0) Return")
             print("Enter the number of the km:")
-            nrKM = CheckInput()
-            if nrKM == 0:
+            self.radius = CheckInputFloat()
+            if self.radius == 0:
                 break            
-            ratioLat = 1/110.74
-            ratioLong = (1/111.32)*math.acos(ratioLat)
-            distanceNrLat = nrKM*ratioLat
-            distanceNrLong = nrKM*ratioLong
-            self.chosenArea.append(distanceNrLat)
-            self.chosenArea.append(distanceNrLong)
-            self.Shops()
-    def Shops(self):
+            self.findShops()
+    def findShops(self):
         geolocator = Nominatim(user_agent="name")
         address1 = ", ".join(["second hand", self.address["city"]])
         address2 = ", ".join(["używana odzież", self.address["city"]])
@@ -210,11 +211,11 @@ class Location:
         address9 = ", ".join(["sklep odzieżowy", "używana", self.address["city"]])
         address10 = ", ".join(["lumpex", self.address["city"]])
         address11 = ", ".join(["używana", self.address["city"]])
-        address12 = ", ".join(["vintage", "używana", self.address["city"]])
+        address12 = ", ".join(["vintage", "sklep z odzieżą używaną", self.address["city"]])
         address13 = ", ".join(["sklep", "odzież", "używana", self.address["city"]])
         address14 = ", ".join(["sklep odzieżowy", "lumpeks", self.address["city"]])
         address15 = ", ".join(["second hand shop", self.address["city"]])
-        
+        address16 = ", ".join(["komis", "sklep z odzieżą używaną", self.address["city"]])
         location1 = geolocator.geocode(address1, exactly_one =False)
         location2 = geolocator.geocode(address2, exactly_one =False)
         location3 = geolocator.geocode(address3, exactly_one =False)
@@ -230,81 +231,99 @@ class Location:
         location13 = geolocator.geocode(address13, exactly_one =False)
         location14 = geolocator.geocode(address14, exactly_one =False)
         location15 = geolocator.geocode(address15, exactly_one =False)
+        location16 = geolocator.geocode(address16, exactly_one =False)
         try:
             for loc in location1:
-                print(loc.address)
+                self.locations.append(loc)
         except:
             pass
         try:
             for loc in location2:
-                print(loc.address)
+                self.locations.append(loc)
         except:
             pass
         try:
             for loc in location3:
-                print(loc.address)
+                self.locations.append(loc)
         except:
             pass
         try:
             for loc in location4:
-                print(loc.address)
+                self.locations.append(loc)
         except:
             pass
         try:
             for loc in location5:
-                print(loc.address)
+                self.locations.append(loc)
         except:
             pass
         try:
             for loc in location6:
-                print(loc.address)
+                self.locations.append(loc)
         except:
             pass
         try:
             for loc in location7:
-                print(loc.address)
+                self.locations.append(loc)
         except:
             pass
         try:
             for loc in location8:
-                print(loc.address)
+                self.locations.append(loc)
         except:
             pass
         try:
             for loc in location9:
-                print(loc.address)
+                self.locations.append(loc)
         except:
             pass
         try:
             for loc in location10:
-                print(loc.address)
+                self.locations.append(loc)
         except:
             pass
         try:
             for loc in location11:
-                print(loc.address)
+                self.locations.append(loc)
         except:
             pass
         try:
             for loc in location12:
-                print(loc.address)
+                self.locations.append(loc)
         except:
             pass
         try:
             for loc in location13:
-                print(loc.address)
+                self.locations.append(loc)
         except:
             pass
         try:
             for loc in location14:
-                print(loc.address)
+                self.locations.append(loc)
         except:
             pass
         try:
             for loc in location15:
-                print(loc.address)
+                self.locations.append(loc)
         except:
             pass
+        try:
+            for loc in location16:
+                self.locations.append(loc)
+        except:
+            pass
+        self.getDistance()
+    def getDistance(self):
+        os.system('cls' if os.name == 'nt' else 'clear')
+        for loc in self.locations:
+            self.Distance.append(GD((str(loc.latitude),str(loc.longitude)), (self.lat,self.long)).km)
+        for id in range(len(self.locations)):
+            if self.Distance[id] <= self.radius and not (self.locations[id] in self.closestLocations):
+                self.closestLocations.append(self.locations[id])
+        for id in range(len(self.closestLocations)):
+            print("({}) {}".format(id, self.closestLocations[id]))
+
+        
         input()
 
 Main()
