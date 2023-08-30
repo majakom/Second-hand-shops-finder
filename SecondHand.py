@@ -255,6 +255,10 @@ def AddShopsManual(YourLocation):
         UploadDataOut()
         return YourShop
 
+def DisplayMyDatabase(YourLocation):
+    for id in range(len(listOfAllShops)):
+        distance = GD((str(YourLocation.latitude),str(YourLocation.longitude)), (listOfAllShops[id].latitude, listOfAllShops[id].longitude)).km
+        print("({}) {} - {} - {} km from You".format(id, listOfAllShops[id].name, listOfAllShops[id].district, ))
 
 class YourAddress:
     def __init__(self, latitude, longitude, country, region, city, district, street, building, location):
@@ -544,24 +548,32 @@ class YourAddress:
                 choice = CheckInputInt()
     def DistrictSearch(self):
         self.locations = self.closestLocations
-        for id in range(len(self.closestLocations)):
-            print("({}) {}".format(id, self.closestLocations[id]))
-        print("\n=====================================")
-        print("(0) Choose a shop and check the details")
-        print("(1) I didn't find my shop")
-        choice = CheckInputInt()
-        os.system('cls' if os.name == 'nt' else 'clear')
-        match choice:
-            case 0:
-                for id in range(len(self.closestLocations)):
-                    print("({}) {}".format(id, self.closestLocations[id]))
-                print("\n=====================================")
-                print("Enter the number of the shop:")
-                choice = CheckInputInt()
-            case 1:
-                print("(0) Add a shop")
-                print("(1) Return")
-                choice = CheckInputInt()
+        while True:
+            for id in range(len(self.closestLocations)):
+                print("({}) {}".format(id, self.closestLocations[id]))
+            print("\n=====================================")
+            print("(0) Choose a shop and check the details")
+            print("(1) I didn't find my shop")
+            choice = CheckInputInt()
+            os.system('cls' if os.name == 'nt' else 'clear')
+            match choice:
+                case 0:
+                    for id in range(len(self.closestLocations)):
+                        print("({}) {}".format(id, self.closestLocations[id]))
+                    print("\n=====================================")
+                    print("Enter the number of the shop:")
+                    choice = CheckInputInt()
+                case 1:
+                    print("(0) Add a shop")
+                    print("(1) Search my database")
+                    print("(2) Return")
+                    choice = CheckInputInt()
+                    match choice:
+                        case 0:
+                            AddShopsManual(self)
+                        case 1:
+                            DisplayMyDatabase(self)
+
 
 class SecondHandShop:
     def __init__(self, latitude, longitude, name, country, state, city, street, building, location):
