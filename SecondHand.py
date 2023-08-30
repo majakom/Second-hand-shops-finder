@@ -1,4 +1,5 @@
 import pickle
+import time
 import os
 import json
 from urllib.request import urlopen
@@ -7,8 +8,49 @@ from geopy.geocoders import Nominatim
 from geopy.distance import geodesic as GD
 def prRed(skk): print("\033[91m {}\033[00m" .format(skk))
 def prGreen(skk): print("\033[92m {}\033[00m" .format(skk))
+global listOfAllShops
+listOfAllShops = []
+
+def LoadPickleOut():
+    try:
+        with open('shopsData.pkl', 'rb') as shopsData:
+            listOfAllShops = pickle.load(shopsData)
+    except:
+        print("You have 0 shops in Your database")
+
+def UploadDataOut():
+    with open('shopsData.pkl', 'wb') as shopsData:
+        pickle.dump(listOfAllShops, shopsData)
+
+def CheckInputInt():
+    while True:
+        try:
+            choice = int(input())
+            return choice
+        except:
+            print("Wrong input. Try again:")
+
+def CheckInputFloat():
+    while True:
+        try:
+            choice = float(input())
+            return choice
+        except:
+            print("Wrong input. Try again:")
+
+def CheckInputForExit():
+    while True:
+        try:
+            choice = int(input())
+            return choice
+        except:
+            choice = input()
+            choice.lower()
+            if choice == 'exit':
+                return choice
 
 def Main():
+    listOfAllShops = LoadPickleOut()
     while True:
         os.system('cls' if os.name == 'nt' else 'clear')
         print("How would You like to get Your address?")
@@ -25,57 +67,25 @@ def Main():
                 exit()
         Menu(YourLocation)
 
-def CheckInputInt():
-    while True:
-        try:
-            choice = int(input())
-            break
-        except:
-            print("Wrong input. Try again:")
-    return choice
-
-def CheckInputFloat():
-    while True:
-        try:
-            choice = float(input())
-            break
-        except:
-            print("Wrong input. Try again:")
-    return choice
-
-def CheckInputForExit():
-    while True:
-        try:
-            choice = int(input())
-            return choice
-        except:
-            choice = input()
-            choice.lower()
-            if choice == 'exit':
-                return choice
-
 def GetYourLocationIP():
     latLongData = []
+    urlopen("http://ipinfo.io/json")
+    data = json.load(urlopen("http://ipinfo.io/json"))
+    ip = data['ip']
+    result = DbIpCity.get(ip, api_key="free")
+    latitude = result.latitude
+    longitude = result.longitude
+    country = result.country
+    region = result.region
+    city = result.city
+    latLongData.append(str(latitude))
+    latLongData.append(str(longitude))
+    geolocator = Nominatim(user_agent="GetLoc")
+    location = geolocator.reverse(", ".join(latLongData))
     while True:
-        urlopen("http://ipinfo.io/json")
-        data = json.load(urlopen("http://ipinfo.io/json"))
-
-        ip = data['ip']
-        result = DbIpCity.get(ip, api_key="free")
-        latitude = result.latitude
-        longitude = result.longitude
-        country = result.country
-        region = result.region
-        city = result.city
-        latLongData.append(str(latitude))
-        latLongData.append(str(longitude))
-        geolocator = Nominatim(user_agent="GetLoc")
-        location = geolocator.reverse(", ".join(latLongData))
-
         if city == None or region == None:
             print("Unfortunatelly there is no access to your location via Your IP address.")
             break
-
         os.system('cls' if os.name == 'nt' else 'clear')
         print("="*len(str(location)))
         print(location)
@@ -88,17 +98,7 @@ def GetYourLocationIP():
             case 0:
                 data = location.raw
                 data = data['address']
-                city = data['city']
-                district = data['suburb']
-                street = data['road']
-                YourLocation = YourAddress(latitude, longitude)
-                YourLocation.address["country"] = country
-                YourLocation.address["region"] = region
-                YourLocation.address["city"] = city
-                YourLocation.address["district"] = district
-                YourLocation.address["street"] = street
-                YourLocation.address["building"] = None
-                YourLocation.address["location"]= location
+                YourLocation = YourAddress(latitude, longitude, country, region, data['city'], data['suburb'], data['road'], None, location)
                 return YourLocation
             case 1:
                 break
@@ -110,7 +110,6 @@ def EnterYourLocation():
     addressList = []
     addressList.append(country)
     geolocator = Nominatim(user_agent="MyApp")
-    
     while True:
         if street == None and building == None:
             os.system('cls' if os.name == 'nt' else 'clear')
@@ -155,60 +154,47 @@ def EnterYourLocation():
                 data = location.raw
                 data = data['address']
                 state = data['state']
-                YourLocation = YourAddress(location.latitude, location.longitude)
-                YourLocation.address["country"] = country
-                YourLocation.address["region"] = state
-                YourLocation.address["city"] = city
-                YourLocation.address["street"] = street
-                YourLocation.address["building"] = building
-                YourLocation.address["location"]= location
                 try:
                     district = data['suburb']
-                    print(district)
-                    YourLocation.address["district"] = district
-                    input()
                 except:
-                    YourLocation.address["district"] = None
+                    district = None
+                YourLocation = YourAddress(location.latitude, location.longitude, country, state, city, district, street, building, location)
                 return YourLocation
 
 def Menu(YourLocation):
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print("========Choose:==========")
-    print("(0) Find Shops in Your Area")
-    print("(1) Select a shop from Your database")
-    print("(2) Add a shop to Your database")
-    print("(3) Exit")
-    choice = CheckInputInt()
-    match choice:
-        case 0:
-            YourLocation.AreaChoice()
-        case 1:
-            YourShop = AddShopsManual(YourLocation)
-            YourShop.AddShopsSalesData()
+    while True:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("========Choose:==========")
+        print("(0) Find Shops in Your Area")
+        print("(1) Select a shop from Your database")
+        print("(2) Add a shop to Your database")
+        print("(3) Exit")
+        choice = CheckInputInt()
+        match choice:
+            case 0:
+                YourLocation.AreaChoice()
+            case 2:
+                YourShop = AddShopsManual(YourLocation)
+                if not YourShop:
+                    pass
+                else:
+                    YourShop.AddShopsSalesData()
+            case 3:
+                exit()
 
-        case 3:
-            exit()
-
-def LoadPickleOut():
-        listOfAllShops = []
-        try:
-            if os.path.isfile("shopsData.pkl"):
-                with open('shopsData.pkl', 'rb') as shopsData:
-                    listOfAllShops = pickle.load(shopsData)
-                return listOfAllShops
-        except:
-            print("You have 0 shops in Your database")
-            pass
-def UploadDataOut(listOfAllShops):
-    with open('shopsData.pkl', 'wb') as shopsData:
-        pickle.dump(listOfAllShops, shopsData)
 def AddShopsManual(YourLocation):
     geolocator = Nominatim(user_agent="MyApp")
     country = YourLocation.address['country']
     addressList = []
     addressList.append(country)
     while True:
-        listOfAllShops = LoadPickleOut()
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("///////////type 'exit' to return////////////")
+        print("Enetr the name of the shop (it doesn't need to be real - what matters is that You will recognise it later)")
+        name = input()
+        if name == 'exit':
+            YourShop = False
+            return YourShop
         os.system('cls' if os.name == 'nt' else 'clear')
         print("///////////type 'exit' to return////////////")
         print("Is the new shop in the same city You are in?")
@@ -221,7 +207,8 @@ def AddShopsManual(YourLocation):
             case 1:
                 city = input()
             case 'exit':
-                break
+                YourShop = False
+                return YourShop
         addressList.append(city)
         os.system('cls' if os.name == 'nt' else 'clear')
         print("/////////////type 'exit' to return////////////")
@@ -235,7 +222,8 @@ def AddShopsManual(YourLocation):
             case 1:
                 street = input()
             case 'exit':
-                break
+                YourShop = False
+                return YourShop
         addressList.append(street)
         os.system('cls' if os.name == 'nt' else 'clear')
         print("////////////type 'exit' to return///////////////")
@@ -255,30 +243,24 @@ def AddShopsManual(YourLocation):
             case 1:
                 building = input()
             case 'exit':
-                break
+                YourShop = False
+                return YourShop
         addressList.append(building)
         address = ", ".join(addressList)
         location = geolocator.geocode(address, addressdetails=True)
         data = location.raw
         data = data['address']
         state = data['state']
-        YourShop = SecondHandShop(location.latitude, location.longitude)
-        YourShop.address["country"] = country
-        YourShop.address["region"] = state
-        YourShop.address["city"] = city
-        YourShop.address["street"] = street
-        YourShop.address["building"] = building
-        YourShop.address["location"]= location
+        YourShop = SecondHandShop(location.latitude, location.longitude, name, country, state, city, street, building, location)
+        UploadDataOut()
         return YourShop
-
-                
 
 
 class YourAddress:
-    def __init__(self, latitude, longitude):
+    def __init__(self, latitude, longitude, country, region, city, district, street, building, location):
         self.latitude = latitude
         self.longitude = longitude
-        self.address = {}
+        self.address = {"country":country, "region":region, "city":city, "street":street,"district":district, "building":building, "location":location}
         self.locations = []
         self.distance = []
         self.closestLocations = []
@@ -301,11 +283,11 @@ class YourAddress:
     def AreaKM(self):
         while True:
             print("Enter the number of the km or (0) return:")
-            self.radius = CheckInputFloat()
-            if self.radius == 0:
+            radius = CheckInputFloat()
+            if radius == 0:
                 break            
-            self.findShopsKM()
-    def findShopsKM(self):
+            self.findShopsKM(radius)
+    def findShopsKM(self, radius):
         geolocator = Nominatim(user_agent="name")
         address1 = ", ".join(["second hand", self.address["city"]])
         address2 = ", ".join(["używana odzież", self.address["city"]])
@@ -419,7 +401,7 @@ class YourAddress:
                 self.locations.append(loc)
         except:
             pass 
-        self.getDistanceKM() 
+        self.getDistanceKM(radius) 
     def findShopsInDistrict(self):
         geolocator = Nominatim(user_agent="name")
         address1 = ", ".join(["second hand", self.address['district'], self.address["city"]])
@@ -535,12 +517,12 @@ class YourAddress:
         except:
             pass
         self.DistrictSearch() 
-    def getDistanceKM(self):
+    def getDistanceKM(self, radius):
         os.system('cls' if os.name == 'nt' else 'clear')
         for loc in self.locations:
             self.distance.append(GD((str(loc.latitude),str(loc.longitude)), (self.latitude,self.longitude)).km)
         for id in range(len(self.locations)):
-            if self.distance[id] <= self.radius and not (self.locations[id] in self.closestLocations):
+            if self.distance[id] <= radius and not (self.locations[id] in self.closestLocations):
                 self.closestLocations.append(self.locations[id])  
         for id in range(len(self.closestLocations)):
             print("({}) {} {} {}".format(id, self.closestLocations[id], str(self.closestLocations[id].latitude), str(self.closestLocations[id].longitude)))
@@ -582,11 +564,13 @@ class YourAddress:
                 choice = CheckInputInt()
 
 class SecondHandShop:
-    def __init__(self, latitude, longitude):
+    def __init__(self, latitude, longitude, name, country, state, city, street, building, location):
+        self.name = name
         self.latitude = latitude
         self.longitude = longitude
-        self.address = {}
+        self.address = {"country":country, "region":state, "city":city, "street":street, "building":building, "location":location}
         self.prizes = {}
+        listOfAllShops.append(self)
     def AddShopsSalesData(self):
         while True:
             os.system('cls' if os.name == 'nt' else 'clear')
@@ -597,44 +581,117 @@ class SecondHandShop:
             choice = CheckInputInt()
             match choice:
                 case 0:
-                    self.AddPrizes(self)
+                    self.AddPrizes()
                 case 1:
-                    self.AddDeliveryDay(self)
+                    self.AddDeliveryDay()
                 case 2:
                     break
+        UploadDataOut()
     def AddDeliveryDay(self):
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print("Choose the day of the delivery:")
-        print("(0) Monday")
-        print("(1) Tuesday")
-        print("(2) Wednesday")
-        print("(3) Thursday")
-        print("(4) Friday")
-        print("(5) Saturday")
-        print("(6) Sunday")
-        print("(7) Return")
-        choice = CheckInputInt()
-        match choice:
-            case 0:
-                delivery = "Monday"
-            case 1:
-                delivery = "Tuesday"
-            case 2:
-                delivery = "Wednesday"
-            case 3:
-                delivery = "Tuesday"
-            case 4:
-                delivery = "Friday"
-            case 5:
-                delivery = "Saturday"
-            case 6:
-                delivery = "Sunday"
-            case 7:
-                return
-        self.prizes['delivery day'] = delivery   
-    #def AddPrizes(self):
-
-
+        while True:
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print("Choose the day of the delivery:")
+            print("(0) Monday")
+            print("(1) Tuesday")
+            print("(2) Wednesday")
+            print("(3) Thursday")
+            print("(4) Friday")
+            print("(5) Saturday")
+            print("(6) Sunday")
+            print("(7) Return")
+            choice = CheckInputInt()
+            match choice:
+                case 0:
+                    delivery = "Monday"
+                case 1:
+                    delivery = "Tuesday"
+                case 2:
+                    delivery = "Wednesday"
+                case 3:
+                    delivery = "Tuesday"
+                case 4:
+                    delivery = "Friday"
+                case 5:
+                    delivery = "Saturday"
+                case 6:
+                    delivery = "Sunday"
+                case 7:
+                    break
+            self.prizes['delivery day'] = delivery   
+    def AddPrizes(self):
+        while True:
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print("(0) Add prizes according to the day of the week")
+            print("(1) Add a note - prizes are different for each item")
+            print("(2) Return")
+            choice = CheckInputInt()
+            os.system('cls' if os.name == 'nt' else 'clear')
+            match choice:
+                case 0:
+                    print("Choose the day of the week:")
+                    print("(0) Monday")
+                    print("(1) Tuesday")
+                    print("(2) Wednesday")
+                    print("(3) Thursday")
+                    print("(4) Friday")
+                    print("(5) Saturday")
+                    print("(6) Sunday")
+                    print("(7) Return")
+                    choice = CheckInputInt()
+                    match choice:
+                        case 0:
+                            print("Enter the prize per kg on Monday or (0) return")
+                            monday = input()
+                            if monday == "0":
+                                break
+                            self.prizes['Monday'] = monday
+                        case 1:
+                            print("Enter the prize per kg on Tuesday or (0) return")
+                            tuesday = input()
+                            if tuesday == "0":
+                                break
+                            self.prizes['Tuesday'] = tuesday
+                        case 2:
+                            print("Enter the prize per kg on Wednesday or (0) return")
+                            wednesday = input()
+                            if wednesday == "0":
+                                break
+                            self.prizes['Wednesday'] = wednesday
+                        case 3:
+                            print("Enter the prize per kg on Thursday or (0) return")
+                            thursday = input()
+                            if thursday == "0":
+                                break
+                            self.prizes['Thursday'] = thursday
+                        case 4:
+                            print("Enter the prize per kg on Friday or (0) return")
+                            friday = input()
+                            if friday == "0":
+                                break
+                            self.prizes['Friday'] = friday
+                        case 5:
+                            print("Enter the prize per kg on Saturday or (0) return")
+                            saturday = input()
+                            if saturday == "0":
+                                break
+                            self.prizes['Saturday'] = saturday
+                        case 6:
+                            print("Enter the prize per kg on Sunday or (0) return")
+                            sunday = input()
+                            if sunday == "0":
+                                break
+                            self.prizes['Sunday'] = sunday
+                        case 7:
+                            print("bruh")
+                            break
+                case 1:
+                    os.system('cls' if os.name == 'nt' else 'clear')
+                    self.prizes = {'Monday': "unspecified",'Tuesday': "unspecified", 'Wednesday': "unspecified", 'Thursday': "unspecified", 'Firday': "unspecified", 
+                                   'Saturday': "unspecified", 'Sunday': "unspecified"}
+                    print("Note added")
+                    time.sleep(2)
+                case 2:
+                    break
 
 Main()        
 
