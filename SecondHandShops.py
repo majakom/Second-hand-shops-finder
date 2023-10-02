@@ -501,11 +501,23 @@ def CheckYourDatabase(YourLocation):
                 except:
                      print("({}) - {}: ".format(i, listOfAllShops[i].name), listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['road'])
         print("=========================================")
-        print("(0) Check for details of a shop")
-        print("(1) Add a new shop to Your database")
-        print("(2) Remove a shop from Your database")
-        print("(3) Return")
+        if len(listOfAllShops) == 0:
+            print("(0) Add a new shop to Your database")
+            print("(1) Return")
+        else:
+            print("(0) Check for details of a shop")
+            print("(1) Add a new shop to Your database")
+            print("(2) Remove a shop from Your database")
+            print("(3) Return")
         choice = CheckInputForExit()
+        if len(listOfAllShops) == 0:
+            if choice == 0:
+                choice = 1
+            elif choice == 1:
+                choice = 3
+            elif type(choice) == int:
+                if choice>= 2:
+                    choice = 4
         os.system('cls' if os.name == 'nt' else 'clear')
         match choice:
             case 0:
@@ -548,28 +560,27 @@ def CheckYourDatabase(YourLocation):
 def RemoveShopFromDatabase():
     print("(0) Return")
     print("Enter an index of a shop to remove from Your database")
-    i = 1
-    for i in range(len(listOfAllShops)):
+    for i in range(1,len(listOfAllShops)):
         try:
             try:
-                print("({}) - {}: ".format(i, listOfAllShops[i].name), listOfAllShops[i].data['address']['city'], listOfAllShops[i].data['address']['suburb'], 
+                print("({}) - {}: ".format(i+1, listOfAllShops[i].name), listOfAllShops[i].data['address']['city'], listOfAllShops[i].data['address']['suburb'], 
                 listOfAllShops[i].data['address']['road'], listOfAllShops[i].data['address']['house_number'])
             except:
-                print("({}) - {}: ".format(i, listOfAllShops[i].name), listOfAllShops[i].data['address']['city'], listOfAllShops[i].data['address']['suburb'],
+                print("({}) - {}: ".format(i+1, listOfAllShops[i].name), listOfAllShops[i].data['address']['city'], listOfAllShops[i].data['address']['suburb'],
                 listOfAllShops[i].data['address']['road'])
         except:
             try:
-                print("({}) - {}: ".format(i, listOfAllShops[i].name), listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['road'], 
+                print("({}) - {}: ".format(i+1, listOfAllShops[i].name), listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['road'], 
                 listOfAllShops[i].data['address']['house_number'])
             except:
-                print("({}) - {}: ".format(i, listOfAllShops[i].name), listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['road'])
+                print("({}) - {}: ".format(i+1, listOfAllShops[i].name), listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['road'])
     id = CheckInputInt()
     if not id:
         return
-    while 0>id> len(listOfAllShops):
+    while 0>=id-1>len(listOfAllShops):
         print("Try again: ")
         id = CheckInputInt()
-    listOfAllShops.remove(listOfAllShops[id])
+    listOfAllShops.remove(listOfAllShops[id-1])
     UploadData()
 
 class YourAddress:
