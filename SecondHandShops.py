@@ -105,8 +105,14 @@ def GetYourLocationIP():
             case 0:
                 data = location.raw
                 addressList.insert(0, data['address']['country'])
-                addressList.insert(1, data['address']['city'])
-                addressList.insert(2, data['address']['road'])
+                try:
+                    addressList.insert(1, data['address']['city'])
+                except:
+                    addressList.insert(1, data['address']['village'])
+                try:
+                    addressList.insert(2, data['address']['road'])
+                except:
+                    addressList.insert(2, data['address']['neighbourhood'])
                 try:
                     addressList.append(3, data['address']['house_number'])
                 except:
@@ -220,6 +226,8 @@ def Menu(YourLocation):
 
 
 def ChangeData(YourLocation):
+    global addressList
+    altered = []
     while True:
         os.system('cls' if os.name == 'nt' else 'clear')
         print("="*len(", ".join(addressList)))
@@ -233,17 +241,27 @@ def ChangeData(YourLocation):
         os.system('cls' if os.name == 'nt' else 'clear')
         match choice:
             case 0:
-                print("You entered before:", YourLocation.data['address']['city'])
-                print("="*(len(YourLocation.data['address']['city'])//2), "Add a new city/town:", "="*(len(YourLocation.data['address']['city'])//2))
+                try:
+                    print("You entered before:", YourLocation.data['address']['city'])
+                    print("="*(len(YourLocation.data['address']['city'])//2), "Add a new city/town:", "="*(len(YourLocation.data['address']['city'])//2))
+                except:
+                    print("You entered before:", YourLocation.data['address']['village'])
+                    print("="*(len(YourLocation.data['address']['village'])//2), "Add a new city/town:", "="*(len(YourLocation.data['address']['village'])//2))
                 city = input()
                 addressList.remove(addressList[1])
                 addressList.insert(1, city)
+                altered.append("city/town")
             case 1:
-                print("You entered before:", YourLocation.data['address']['road'])
-                print("="*(len(YourLocation.data['address']['road'])//2), "Add a new street", "="*(len(YourLocation.data['address']['road'])//2))
+                try:
+                    print("You entered before:", YourLocation.data['address']['road'])
+                    print("="*(len(YourLocation.data['address']['road'])//2), "Add a new street", "="*(len(YourLocation.data['address']['road'])//2))
+                except:
+                    print("You entered before:", YourLocation.data['address']['neighbourhood'])
+                    print("="*(len(YourLocation.data['address']['neighbourhood'])//2), "Add a new street", "="*(len(YourLocation.data['address']['neighbourhood'])//2))
                 street = input()
                 addressList.remove(addressList[2])
                 addressList.insert(2, street)
+                altered.append("street")
             case 2:
                 try:
                     print("You entered before:", addressList[3])
@@ -253,17 +271,27 @@ def ChangeData(YourLocation):
                     print("Add the number of the building:")
                 number = input()
                 addressList.insert(3, number)
+                altered.append("number of the building")
             case 3:
-                break
+                address = ", ".join(addressList) 
+                print(address)
+                try:
+                    location = geolocator.geocode(address, addressdetails=True)
+                    YourLocation.data = location.raw
+                    YourLocation.latitude = location.latitude
+                    YourLocation.longitude = location.longitude
+                    return YourLocation
+                except:
+                    print("There is no such location")
+                    print("=========================")
+                    print("You altered before: ")
+                    for change in altered:
+                        print(change)
+                    time.sleep(3)
+                    altered.clear()
             case 'exit':
                 exit() 
-        address = ", ".join(addressList) 
-        print(address)
-        location = geolocator.geocode(address, addressdetails=True)
-        YourLocation.data = location.raw
-        YourLocation.latitude = location.latitude
-        YourLocation.longitude = location.longitude
-        return YourLocation
+        
 
 def AddShop(YourLocation):
     country = "Poland"
@@ -348,7 +376,9 @@ def AddShop(YourLocation):
                 print(key, ":", value)
             location = geolocator.geocode(address, addressdetails=True)
             data = location.raw
+            addressShop.clear()
         except:
+            addressShop.clear()
             print("There is no such location")
             time.sleep(4)
             return 0
@@ -508,7 +538,8 @@ def CheckYourDatabase(YourLocation):
             print("(0) Check for details of a shop")
             print("(1) Add a new shop to Your database")
             print("(2) Remove a shop from Your database")
-            print("(3) Return")
+            print("(3) Change data of the shop")
+            print("(4) Return")
         choice = CheckInputForExit()
         if len(listOfAllShops) == 0:
             if choice == 0:
@@ -553,6 +584,34 @@ def CheckYourDatabase(YourLocation):
             case 2:
                 RemoveShopFromDatabase()
             case 3:
+                os.system('cls' if os.name == 'nt' else 'clear')
+                match choice:
+                    case 0:
+                        for i in range(len(listOfAllShops)):
+                            try:
+                                try:
+                                    print("({}) - {}: {}, {}, {} {}".format(i+1, listOfAllShops[i].name, listOfAllShops[i].data['address']['city'], listOfAllShops[i].data['address']['suburb'], 
+                                    listOfAllShops[i].data['address']['road'], listOfAllShops[i].data['address']['house_number']))
+                                except:
+                                    print("({}) - {}: {}, {}, {}".format(i+1, listOfAllShops[i].name, listOfAllShops[i].data['address']['city'], listOfAllShops[i].data['address']['suburb'],
+                                    listOfAllShops[i].data['address']['road']))
+                            except:
+                                try:
+                                    print("({}) - {}:  {}, {}, {} {}".format(i+1, listOfAllShops[i].name, listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['road'], 
+                                    listOfAllShops[i].data['address']['house_number']))
+                                except:
+                                    print("({}) - {}: {}, {}".format(i+1, listOfAllShops[i].name, listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['road']))
+                        print("(0) Return")
+                        print("Enter an index of a shop to change its data:")
+                        id = CheckInputInt()
+                        if id == 0:
+                            pass
+                        else:
+                            while 0>id> len(listOfAllShops):
+                                print("Try again: ")
+                                id = CheckInputInt()
+                            listOfAllShops[id-1].ChangeShopData()
+            case 4:
                 break
             case 'exit':
                 exit()
@@ -858,10 +917,11 @@ class YourAddress:
             return
         elif id == 'exit':
             exit()
-        print(newLocations[id-1])
         addressShop = []
         checkBox = [0,0,0,0]
         addressShop.insert(0, "Poland")
+        print(type(newLocations[id-1]))
+        input()
         #name = newLocations[id-1][0]
         #city = newLocations[id-1][6]
         #street = newLocations[id-1][2]
@@ -962,10 +1022,6 @@ class YourAddress:
                             exit()
             time.sleep(3)
             return YourShop
-
-
-
-
     def DetailsShopsDatabaseInDistance(self, closestDatabase):
         while True:
             os.system('cls' if os.name == 'nt' else 'clear')
@@ -1020,7 +1076,96 @@ class Shops:
                     break
                 case 'exit':
                     exit()
-        
+    def ChangeShopData(self):
+        addressShop = []
+        addressShop.insert(0, "Poland")
+        global listOfAllShops
+        listOfAllShops.remove(self)
+        while True:
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print("(0) Return")
+            print("(1) Change the name of the shop")
+            print("(2) Change city/town where the shop is")
+            print("(3) Change the street where the shop is")
+            print("(4) Change the house number of where the shop is")
+            print("(5) Change the day of the delivery of the shop")
+            print("(6) Change the prices of products in the shop")
+            print("(7) Apply changes and return")
+            choice = CheckInputForExit()
+            os.system('cls' if os.name == 'nt' else 'clear')
+            match choice:
+                case 0:
+                    listOfAllShops.append(self)
+                    break
+                case 1:
+                    print("(0) return and keep original name")
+                    print("Previous name of the shop: ", self.name)
+                    name = input()
+                    if name != "0":
+                        newname = name
+                case 2:
+                    print("(0) return and keep original city/town")
+                    try:
+                        print("Previous city/town of the shop: ", self.data['address']['city'])
+                    except:
+                        print("Previous city/town of the shop: ", self.data['address']['village'])
+                    city = input()
+                    if city != "0":
+                        addressShop.insert(1, city)
+                case 3:
+                    print("(0) return and keep original street")
+                    try:
+                        print("Previous city/town of the shop: ", self.data['address']['road'])
+                    except:
+                        print("Previous city/town of the shop: ", self.data['address']['neighbourhood'])
+                    street = input()
+                    if street != "0":
+                        addressShop.insert(2, street)
+                case 4:
+                    print("(0) return and keep original house number")
+                    try:
+                        print("Previous city/town of the shop: ", self.data['address']['house_number'])
+                    except:
+                        print("There was no house number entered before")
+                    number = input()
+                    if number != "0":
+                        addressShop.insert(3, number)
+                case 5:
+                    newdelivery = AddDeliveryDay(self.delivery)
+                case 6:
+                    newprices = AddPrices(self.prices)
+                case 7:
+                    address = ", ".join(addressShop)
+                    try:
+                        location = geolocator.geocode(address, addressdetails=True)
+                        self.name = newname
+                        self.prices = newprices
+                        self.delivery = newdelivery
+                        self.latitude = location.latitude
+                        self.longitude = location.longiutde
+                        self.data = location.raw
+                        addressShop.clear()
+                        listOfAllShops.append(self)
+                        UploadData()                  
+                        print(self.name)
+                        print(address)
+                        print("Delivery day: ", self.delivery)
+                        for key, value in self.prices.items():
+                            print(key, ":", value)
+                        time.sleep(2)
+                    except:
+                        print("There is no such location")
+                        print("=========================")
+                        print(self.name)
+                        print(address)
+                        print("Delivery day: ", self.delivery)
+                        for key, value in self.prices.items():
+                            print(key, ":", value)
+                        addressShop.clear()
+                        time.sleep(2)
+                case 'exit':
+                    exit()
+
             
 def LoadData():
     global listOfAllShops 
