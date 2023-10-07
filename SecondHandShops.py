@@ -214,7 +214,9 @@ def Menu(YourLocation):
                     YourLocation.findShopsArea(radius, 0)                 
                 elif not radius:
                     pass
-            #case 3:
+            case 3:
+                options = FindBestShopOptions()
+
             case 4:
                 YourLocation = ChangeData(YourLocation)
             case 5:
@@ -224,6 +226,90 @@ def Menu(YourLocation):
             case 'exit':
                 exit()
 
+def FindBestShopOptions():
+    options = [None, None, None]
+    while True:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("Choose properties that You want to include:")
+        print("(0) Distance - find the closest shop")
+        print("(1) Day of delivery")
+        print("(2) Price")
+        print("(3) Return")
+        print("(4) Continue")
+        choice = CheckInputForExit()
+        match choice:
+            case 0:
+                options[0] = 1
+            case 1:
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print("Choose an option:")
+                print("(0) Find a shop with the newest products (with the most recent delivery)")
+                print("(1) Find a shop where delivery is going to be soon (in a day/two, etc.)")
+                print("(2) Return - do not include option \"day of delivery\" in search for the most suitable shop" )
+                choice = CheckInputForExit()
+                os.system('cls' if os.name == 'nt' else 'clear')
+                match choice:
+                    case 0:
+                        options[1]= 1
+                    case 1:
+                        options[1] = 2
+                    case 2:
+                        pass
+                    case 'exit':
+                        exit()
+            case 2:
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print("Choose an option:")
+                print("(0) Find a shop where prices per kilogram of product are the lowest")
+                print("(1) Find a shop where prices per kilogram of product are the highest")
+                print("(2) Find a shop where prices are different for each product")
+                print("(3) Return - do not include option \"price\" in search for the most suitable shop")
+                choice = CheckInputForExit()
+                match choice:
+                    case 0:
+                        options[2] = 1
+                    case 1:
+                        options[2] = 2
+                    case 2:
+                        options[2] = 3
+                    case 3:
+                        pass
+            case 3:
+                break
+            case 4:
+                return options
+            case 'exit':
+                exit()
+        print("You chose: ")
+        for i in range(options):
+            if options[i] == None:
+                print(i)
+
+def FindBestShop(YourLocation, options):
+    global listOfAllShops
+    distance = []
+    shopsDifferentPrice = []
+    if options[0] != None:
+        for loc in listOfAllShops:
+            distance.append(GD((str(loc.latitude),str(loc.longitude)), (YourLocation.latitude, YourLocation.longitude)).km)
+    #if options[1] == 1:
+    #    for loc in listOfAllShops:
+    #        if loc.delivery != None:
+                
+
+   # if options[1] == 2:
+
+   # if options[2] == 1:
+
+    if options[2] == 3:
+        for loc in listOfAllShops:
+            if (loc.prices['Monday'] == 'unspecified' and loc.prices['Tuesday'] == 'unspecified' and loc.prices['Wednesday'] == 'unspecified'
+            and loc.prices['Thursday'] == 'unspecified' and loc.prices['Friday'] == 'unspecified' and loc.prices['Saturday'] == 'unspecified'
+            and loc.prices['Sunday'] == 'unspecified'):
+                shopsDifferentPrice.append(loc)
+
+    
+    
 
 def ChangeData(YourLocation):
     global addressList
@@ -292,7 +378,6 @@ def ChangeData(YourLocation):
             case 'exit':
                 exit() 
         
-
 def AddShop(YourLocation):
     country = "Poland"
     city = None
@@ -620,18 +705,33 @@ def CheckYourDatabase(YourLocation):
                         for i in range(len(listOfAllShops)):
                             try:
                                 try:
-                                    print("({}) - {}: {}, {}, {} {}".format(i+1, listOfAllShops[i].name, listOfAllShops[i].data['address']['city'], listOfAllShops[i].data['address']['suburb'], 
-                                    listOfAllShops[i].data['address']['road'], listOfAllShops[i].data['address']['house_number']))
+                                    try:
+                                        print("({}) - {}: {}, {}, {} {}".format(i+1, listOfAllShops[i].name, listOfAllShops[i].data['address']['city'], listOfAllShops[i].data['address']['suburb'], 
+                                        listOfAllShops[i].data['address']['road'], listOfAllShops[i].data['address']['house_number']))
+                                    except:
+                                        print("({}) - {}: {}, {}, {} {}".format(i+1, listOfAllShops[i].name, listOfAllShops[i].data['address']['city'], listOfAllShops[i].data['address']['suburb'], 
+                                        listOfAllShops[i].data['address']['neighbourhood'], listOfAllShops[i].data['address']['house_number']))
                                 except:
-                                    print("({}) - {}: {}, {}, {}".format(i+1, listOfAllShops[i].name, listOfAllShops[i].data['address']['city'], listOfAllShops[i].data['address']['suburb'],
-                                    listOfAllShops[i].data['address']['road']))
+                                    try:
+                                        print("({}) - {}: {}, {}, {}".format(i+1, listOfAllShops[i].name, listOfAllShops[i].data['address']['city'], listOfAllShops[i].data['address']['suburb'],
+                                        listOfAllShops[i].data['address']['road']))
+                                    except:
+                                        print("({}) - {}: {}, {}, {}".format(i+1, listOfAllShops[i].name, listOfAllShops[i].data['address']['city'], listOfAllShops[i].data['address']['suburb'],
+                                        listOfAllShops[i].data['address']['neighbourhood']))
                             except:
                                 try:
-                                    print("({}) - {}:  {}, {}, {} {}".format(i+1, listOfAllShops[i].name, listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['road'], 
-                                    listOfAllShops[i].data['address']['house_number']))
+                                    try:
+                                        print("({}) - {}:  {}, {}, {} {}".format(i+1, listOfAllShops[i].name, listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['road'], 
+                                        listOfAllShops[i].data['address']['house_number']))
+                                    except:
+                                        print("({}) - {}:  {}, {}, {} {}".format(i+1, listOfAllShops[i].name, listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['neighbourhood'], 
+                                        listOfAllShops[i].data['address']['house_number']))
                                 except:
-                                    print("({}) - {}: {}, {}".format(i+1, listOfAllShops[i].name, listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['road']))
-                        print("(0) Return")
+                                    try:
+                                        print("({}) - {}: {}, {}".format(i+1, listOfAllShops[i].name, listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['road']))
+                                    except:
+                                        print("({}) - {}: {}, {}".format(i+1, listOfAllShops[i].name, listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['neighbourhood']))
+                        ("(0) Return")
                         print("Enter an index of a shop to change its data:")
                         id = CheckInputInt()
                         if id == 0:
@@ -652,17 +752,32 @@ def RemoveShopFromDatabase():
     for i in range(0,len(listOfAllShops)):
         try:
             try:
-                print("({}) - {}: ".format(i+1, listOfAllShops[i].name), listOfAllShops[i].data['address']['city'], listOfAllShops[i].data['address']['suburb'], 
-                listOfAllShops[i].data['address']['road'], listOfAllShops[i].data['address']['house_number'])
+                try:
+                    print("({}) - {}: ".format(i+1, listOfAllShops[i].name), listOfAllShops[i].data['address']['city'], listOfAllShops[i].data['address']['suburb'], 
+                    listOfAllShops[i].data['address']['road'], listOfAllShops[i].data['address']['house_number'])
+                except:
+                    print("({}) - {}: ".format(i+1, listOfAllShops[i].name), listOfAllShops[i].data['address']['city'], listOfAllShops[i].data['address']['suburb'], 
+                    listOfAllShops[i].data['address']['neighbourhood'], listOfAllShops[i].data['address']['house_number'])
             except:
-                print("({}) - {}: ".format(i+1, listOfAllShops[i].name), listOfAllShops[i].data['address']['city'], listOfAllShops[i].data['address']['suburb'],
-                listOfAllShops[i].data['address']['road'])
+                try:
+                    print("({}) - {}: ".format(i+1, listOfAllShops[i].name), listOfAllShops[i].data['address']['city'], listOfAllShops[i].data['address']['suburb'],
+                    listOfAllShops[i].data['address']['road'])
+                except:
+                    print("({}) - {}: ".format(i+1, listOfAllShops[i].name), listOfAllShops[i].data['address']['city'], listOfAllShops[i].data['address']['suburb'],
+                    listOfAllShops[i].data['address']['neighbourhood'])
         except:
             try:
-                print("({}) - {}: ".format(i+1, listOfAllShops[i].name), listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['road'], 
-                listOfAllShops[i].data['address']['house_number'])
+                try:
+                    print("({}) - {}: ".format(i+1, listOfAllShops[i].name), listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['road'], 
+                    listOfAllShops[i].data['address']['house_number'])
+                except:
+                    print("({}) - {}: ".format(i+1, listOfAllShops[i].name), listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['neighbourhood'], 
+                    listOfAllShops[i].data['address']['house_number'])
             except:
-                print("({}) - {}: ".format(i+1, listOfAllShops[i].name), listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['road'])
+                try:
+                    print("({}) - {}: ".format(i+1, listOfAllShops[i].name), listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['road'])
+                except:
+                    print("({}) - {}: ".format(i+1, listOfAllShops[i].name), listOfAllShops[i].data['address']['village'], listOfAllShops[i].data['address']['neighbourhood'])
     id = CheckInputForExit()
     if not id:
         return
@@ -936,6 +1051,7 @@ class YourAddress:
                 case 'exit':
                     exit()
     def AddFoundShop(self):
+        latlong = []
         global newLocations        
         os.system('cls' if os.name == 'nt' else 'clear')
         print("New locations within given distance:")
@@ -950,12 +1066,28 @@ class YourAddress:
         addressShop = []
         checkBox = [0,0,0,0]
         addressShop.insert(0, "Poland")
-        print(type(newLocations[id-1]))
-        input()
-        #name = newLocations[id-1][0]
-        #city = newLocations[id-1][6]
-        #street = newLocations[id-1][2]
-        #number = newLocations[id-1][1]
+        latitude = newLocations[id-1].latitude
+        longitude = newLocations[id-1].longitude
+        latlong.append(str(latitude))
+        latlong.append(str(longitude))
+        location = geolocator.reverse(", ".join(latlong))
+        data = location.raw
+        name = None
+        try:
+            city = data['address']['city']
+        except:
+            city = data['address']['village']
+        try:
+            street = data['address']['road']
+        except:
+            street = data['address']['neighbourhood']
+        try:
+            number = data['address']['house_number']
+        except:
+            number = "unspecified"
+        addressShop.insert(1, city)
+        addressShop.insert(2, street)
+        addressShop.insert(3, number)
         prices = {}
         deliveryday = None
         while True:
@@ -978,35 +1110,47 @@ class YourAddress:
             match choice:
                 case 0:
                     break
-                case 1:                    
-                    text = "Previous name of the shop: "+ name
-                    prRed(text)
-                    print("Add the name of the shop:")
-                    name = input()
-                    checkBox.insert(1, 1)
+                case 1: 
+                    if name != None:
+                        text = "Previous name of the shop: "+ name
+                        prRed(text)                 
+                    print("Add the name of the shop or use (0) previous:")
+                    nameNew = input()                    
+                    if nameNew != "0":
+                        name = nameNew
+                        checkBox[0] = 1
+                        
                 case 2:
                     text = "Previous/default name of the city/village: "+ city
                     prRed(text)
-                    print("Add the name of the city/village")
-                    city = input()
-                    addressShop.insert(1, street)
-                    checkBox.insert(2, 1)
+                    print("Add the name of the city/village or use (0) previous/default:")
+                    cityNew = input()
+                    checkBox[1] = 1
+                    if cityNew != "0":
+                        city = cityNew                        
+                        addressShop[1] = city
                 case 3:
-                    text = "Previous name of the street: " + street
+                    text = "Previous/default name of the street: " + street
                     prRed(text)
-                    addressShop.remove(street)
-                    print("Add the name of the street:")
-                    street = input()
-                    addressShop.insert(2, street)
-                    checkBox.insert(3, 1)
+                    print("Add the name of the street or use (0) previous/default:")
+                    streetNew = input()
+                    checkBox[2] = 1
+                    if streetNew != "0":
+                        street = streetNew                        
+                        addressShop[2] = street
                 case 4:
-                    text = "Previous house number: " + number
-                    prRed(text)
-                    addressShop.remove(number)
-                    print("Add the house number: ")
-                    number = input()
-                    addressShop.insert(3, number)
-                    checkBox.insert(0, 1)
+                    if number != "unspecified":
+                        text = "Previous/default house number: " + number
+                        prRed(text)
+                        print("Add the house number or use (0) previous/default: ")
+                        numberNew = input()
+                    else:
+                        print("Add the house number: ")
+                        number = input()
+                    checkBox[3] = 1
+                    if numberNew != "0":
+                        number = numberNew
+                        addressShop[3] = number
                 case 5:
                     if deliveryday != None:
                         text = "Previous delivery day: " + deliveryday
@@ -1034,11 +1178,9 @@ class YourAddress:
                 print("There is no such location")
                 time.sleep(4)
                 return 0
-            if deliveryday == None:
-                deliveryday = "unspecified"
             YourShop = Shops(name, location.latitude, location.longitude, data, deliveryday, prices)
             for shop in listOfAllShops:
-                if name == shop.name and shop.data['address']['road'] == data['address']['road'] and YourShop == shop:
+                if name == shop.name and YourShop == shop:
                     print("You already have this shop in Your database")
                     print("(0) Return")
                     print("(1) Check details of the shop")
@@ -1051,6 +1193,8 @@ class YourAddress:
                         case 'exit':
                             exit()
             time.sleep(3)
+            listOfAllShops.append(YourShop)
+            UploadData()
             return YourShop
     def DetailsShopsDatabaseInDistance(self, closestDatabase):
         while True:
