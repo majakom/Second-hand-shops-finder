@@ -308,8 +308,7 @@ def FindBestShop(YourLocation, options):
             and loc.prices['Sunday'] == 'unspecified'):
                 shopsDifferentPrice.append(loc)
 
-    
-    
+ 
 
 def ChangeData(YourLocation):
     global addressList
@@ -994,7 +993,7 @@ class YourAddress:
             for loc in listOfAllShops:
                 if loc.data['address']['suburb'] == district and not(loc in closestDatabase):
                     closestDatabase.append(loc)
-            self.OperateOnFoundLocations(closestDatabase)
+            self.OperateOnFoundLocations(closestDatabase, district, 1)
     def CheckDistanceFromShop(self, radius):
         global newLocations
         global listOfAllShops
@@ -1014,8 +1013,8 @@ class YourAddress:
                 closestDatabase.append(listOfAllShops[id])
         newLocations.clear()
         newLocations = closestDistance
-        self.OperateOnFoundLocations(closestDatabase)
-    def OperateOnFoundLocations(self, closestDatabase):
+        self.OperateOnFoundLocations(closestDatabase, radius, 0)
+    def OperateOnFoundLocations(self, closestDatabase, distance, string):
         global newLocations
         global listOfAllShops
         while True:
@@ -1033,7 +1032,8 @@ class YourAddress:
                 print("================================================")
                 print("(0) Check for details (only shops from database)")
                 print("(1) Add a new found shop to Your database")
-                print("(2) Return")
+                print("(2) Remove a shop from database")
+                print("(3) Return")
                 choice = CheckInputForExit()
             else:
                 print("There are no shops within your reach")
@@ -1044,13 +1044,15 @@ class YourAddress:
                 case 0:
                     self.DetailsShopsDatabaseInDistance(closestDatabase)
                 case 1:
-                    self.AddFoundShop()
+                    closestDatabase = self.AddFoundShop(closestDatabase, distance, string)
                 case 2:
+                    RemoveShopFromDatabase()
+                case 3:
                     newLocations.clear()
                     break
                 case 'exit':
                     exit()
-    def AddFoundShop(self):
+    def AddFoundShop(self, closestDatabase, distance, string):
         latlong = []
         global newLocations        
         os.system('cls' if os.name == 'nt' else 'clear')
@@ -1109,7 +1111,7 @@ class YourAddress:
             print("==================================")
             match choice:
                 case 0:
-                    break
+                    return closestDatabase
                 case 1: 
                     if name != None:
                         text = "Previous name of the shop: "+ name
@@ -1180,14 +1182,15 @@ class YourAddress:
                 return 0
             YourShop = Shops(name, location.latitude, location.longitude, data, deliveryday, prices)
             for shop in listOfAllShops:
-                if name == shop.name and YourShop == shop:
+                if (YourShop.name == shop.name and YourShop.latitude == shop.latitude and YourShop.latitude == shop.longitude and YourShop.data == shop.data and
+                YourShop.deliveryday == shop.deliveryday and YourShop.prices == shop.prices):
                     print("You already have this shop in Your database")
                     print("(0) Return")
                     print("(1) Check details of the shop")
                     choice = CheckInputForExit()
                     match choice:
                         case 0:
-                            return 0
+                            return closestDatabase
                         case 1:
                             YourShop.DisplayDetailsOfShop(self)
                         case 'exit':
@@ -1195,7 +1198,18 @@ class YourAddress:
             time.sleep(3)
             listOfAllShops.append(YourShop)
             UploadData()
-            return YourShop
+            if string:
+                try:
+                    if YourShop.data['address']['suburb'] == distance:
+                        closestDatabase.append(YourShop)
+                        return closestDatabase
+                except:
+                    return closestDatabase
+            elif not string:
+                far = GD((str(YourShop.latitude),str(YourShop.longitude)), (self.latitude,self.longitude)).km
+                if far <= distance:
+                    closestDatabase.append(YourShop)
+                    return closestDatabase
     def DetailsShopsDatabaseInDistance(self, closestDatabase):
         while True:
             os.system('cls' if os.name == 'nt' else 'clear')
@@ -1254,6 +1268,7 @@ class Shops:
         print((len(self.delivery))//2*"="+"Prices"+(len(self.delivery))//2*"=")  #finish
         for key, value in self.prices.items():
             print(key, ":", value)
+        print((len(self.delivery))//2*"="+"Prices"+(len(self.delivery))//2*"=")
         print("Day of delivery: ", self.delivery)
         print("================="+len(self.delivery)*"=")
         print("(0) Return")
