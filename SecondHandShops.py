@@ -431,8 +431,8 @@ def FindBestShop(YourLocation, options):
     if (options[2] == 1 or options[2] ==2) and options[1]:
         os.system('cls' if os.name == 'nt' else 'clear')
         nr = 0
-        for i in range(deliveryOk):
-            
+        #for i in range(deliveryOk):
+
 
 
 def ChangeData(YourLocation):
@@ -1362,6 +1362,9 @@ class Shops:
         self.prices = prices
     def DisplayDetailsOfShop(self, YourLocation):
         os.system('cls' if os.name == 'nt' else 'clear')
+        week = ['Monday','Tuesady', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        getDay = date.weekday()
+        dayOfWeek = week[getDay]
         distance = GD((self.latitude, self.longitude), (YourLocation.latitude, YourLocation.longitude)).km
         print("Name: {} - currently {} km from You".format(self.name, "%.3f" % distance))
         try:
@@ -1394,6 +1397,7 @@ class Shops:
         for key, value in self.prices.items():
             print(key, ":", value)
         print((len(self.delivery))//2*"="+"Prices"+(len(self.delivery))//2*"=")
+        print("Price for today:", self.prices[dayOfWeek])
         print("Day of delivery: ", self.delivery)
         print("================="+len(self.delivery)*"=")
         print("(0) Return")
