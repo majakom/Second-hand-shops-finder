@@ -308,6 +308,8 @@ def FindBestShop(YourLocation, options):
     HighPriceRecentDeliver = []
     LowPriceSoonDeliver = []
     HighPriceSoonDeliver = []
+    RecentUnspecified = []
+    SoonUnspecified = []
     week = ['Monday','Tuesady', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     getDay = date.weekday()
     dayOfWeek = week[getDay]
@@ -584,134 +586,29 @@ def FindBestShop(YourLocation, options):
                     print("{} - {}: Distance: {} km, Price: {} per kg, Delivery day: {}".format(i,HighPriceSoonDeliver[i].name, dist, HighPriceSoonDeliver[i].prices[dayOfWeek], 
                                                                                                 HighPriceSoonDeliver[i].delivery))
         
+        if options[1] == 1 and options[2] == 3:
+            for loc in listOfAllShops:
+                if loc.prices[dayOfWeek] == 'unspecified' and loc in deliveryRecent:
+                    RecentUnspecified.append(loc)
+            if len(RecentUnspecified) == 0:
+                options = []
+                return
+            for i in range(RecentUnspecified):
+                dist = GD((str(RecentUnspecified[i].latitude),str(RecentUnspecified[i].longitude)), (YourLocation.latitude, YourLocation.longitude)).km               
+                print("{} - {}: Distance: {} km, Price: {}, Delivery day: {}".format(i,RecentUnspecified[i].name, dist, RecentUnspecified[i].prices[dayOfWeek],
+                RecentUnspecified[i].delivery))
 
-
-
-
-
-
-    if options[1] == 1:
-        for loc in listOfAllShops:
-            if loc.delivery == week[getDay-1] or loc.delivery == week[getDay-2]:
-                deliveryOk.append(loc)
-        if not deliveryOk:
-            print("There are no shops with required delivery day assigned")
-            options = []
-            return
-    if options[1] == 2:
-        for loc in listOfAllShops:
-            if loc.delivery == week[getDay-6] or loc.delivery == week[getDay-5]:
-                deliveryOk.append(loc)
-        if not deliveryOk:
-            print("There are no shops with required delivery day assigned")
-            options = []
-            return
-    if options[2] == 1 or options[2] == 2:
-        for loc in listOfAllShops:
-            if loc.prices[dayOfWeek] and loc.prices[dayOfWeek] != 'unspecified':
-                AllPricesForToday.append(loc.prices[dayOfWeek])
-        if not AllPricesForToday:
-            print("There are no shops with prices assigned")
-            options = []
-            return
-        AllPricesForToday.sort()
-        if options[2] == 1
-            try:
-                level1 = AllPricesForToday[0]
-            except:
-                pass
-            try:
-                level2 = AllPricesForToday[1]
-            except:
-                pass
-            try:
-                level3 = AllPricesForToday[2]
-            except:
-                pass
-        if options[2] == 2:
-            try:
-                level1 = AllPricesForToday[-1]
-            except:
-                pass
-            try:
-                level2 = AllPricesForToday[-2]
-            except:
-                pass
-            try:
-                level3 = AllPricesForToday[-3]
-            except:
-                pass
-        for loc in listOfAllShops:
-            if loc.prices[dayOfWeek] and loc.prices[dayOfWeek] != 'unspecified':
-                try:
-                    if level1 == loc.prices[dayOfWeek]:
-                        level1PriceList.append(loc)
-                except:
-                    pass
-                try:
-                    if level2 == loc.prices[dayOfWeek]:
-                        level2PriceList.append(loc)
-                except:
-                    pass
-                try:
-                    if level3 == loc.prices[dayOfWeek]:
-                        level3PriceList.append(loc)
-                except:
-                    pass
-    if options[2] == 3:
-        for loc in listOfAllShops:
-            if loc.prices[dayOfWeek] == 'unspecified':
-                equalPrice.append(loc)
-        if not equalPrice:
-            print("There are no shops with such prices assigned")
-            options = []
-            return
-    if options[0] and options[1] and options[2] == None:
-        os.system('cls' if os.name == 'nt' else 'clear')
-        nr = 0
-        for i in range(deliveryOk):
-            if deliveryOk[i] in distanceCheck:
-                print("{} - {}: {}".format(nr, deliveryOk[i].name, deliveryOk[i].data))
-                nr+=1
-    if options[0] and options[1] == None and options[2] == None:
-        os.system('cls' if os.name == 'nt' else 'clear')
-        nr = 0
-        for i in range(distanceCheck):
-            print("{} - {}: {}, {} km from You".format(nr, distanceCheck[i].name, distanceCheck[i].data, 
-            GD((str(i.latitude),str(i.longitude)), (YourLocation.latitude, YourLocation.longitude)).km))
-            nr+=1
-    if options[1] and options[0] == None and options[2] == None:
-        os.system('cls' if os.name == 'nt' else 'clear')
-        nr = 0
-        for i in range(deliveryOk):
-            print("{} - {}: {}".format(nr, deliveryOk[i].name, deliveryOk[i].data))
-            nr+=1
-    
-    if options[2] != 3 and options[0] == None and options[1] == None:
-        os.system('cls' if os.name == 'nt' else 'clear')
-        nr = 0
-        for i in range(level1PriceList):
-            print("{} - {}: {} - price: {}".format(nr, level1PriceList[i].name, level1PriceList[i].data, level1PriceList[i].price[dayOfWeek]))
-            nr+=1
-        for i in range(level2PriceList):
-            print("{} - {}: {} - price: {}".format(nr, level2PriceList[i].name, level2PriceList[i].data, level2PriceList[i].price[dayOfWeek]))
-            nr+=1
-        for i in range(level3PriceList):
-            print("{} - {}: {} - price: {}".format(nr, level3PriceList[i].name, level3PriceList[i].data, level3PriceList[i].price[dayOfWeek]))
-            nr+=1
-
-    if options[2] == 3 and options[0] == None and options[1] == None:
-        os.system('cls' if os.name == 'nt' else 'clear')
-        nr = 0
-        for i in range(equalPrice):
-            print("{} - {}: {}".format(nr, equalPrice[i].name, equalPrice[i].data))
-            nr+=1
-    
-    if (options[2] == 1 or options[2] ==2) and options[1]:
-        os.system('cls' if os.name == 'nt' else 'clear')
-        nr = 0
-        #for i in range(deliveryOk):
-
+        if options[1] == 2 and options[2] == 3:
+            for loc in listOfAllShops:
+                if loc.prices[dayOfWeek] == 'unspecified' and loc in deliverySoon:
+                    SoonUnspecified.append(loc)
+            if len(SoonUnspecified) == 0:
+                options = []
+                return
+            for i in range(SoonUnspecified):
+                dist = GD((str(SoonUnspecified[i].latitude),str(SoonUnspecified[i].longitude)), (YourLocation.latitude, YourLocation.longitude)).km               
+                print("{} - {}: Distance: {} km, Price: {}, Delivery day: {}".format(i,SoonUnspecified[i].name, dist, SoonUnspecified[i].prices[dayOfWeek],
+                SoonUnspecified[i].delivery))
 
 
 def ChangeData(YourLocation):
