@@ -292,6 +292,10 @@ def FindBestShopOptions():
 
 def FindBestShop(YourLocation, options):
     global listOfAllShops
+    distdelRecentUnspecified = []
+    distdelSoonUnspecified = []
+    distdelSoon = []
+    distdelRecent = []
     distanceCheck = []
     deliveryRecent = []
     deliverySoon =[]
@@ -310,6 +314,10 @@ def FindBestShop(YourLocation, options):
     HighPriceSoonDeliver = []
     RecentUnspecified = []
     SoonUnspecified = []
+    distdelRecentExp = []
+    distdelSoonExp = []
+    distdelRecentCheap = []
+    distdelSoonCheap = []
     week = ['Monday','Tuesady', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     getDay = date.weekday()
     dayOfWeek = week[getDay]
@@ -339,22 +347,21 @@ def FindBestShop(YourLocation, options):
                 distanceAndPrices.add(loc.prices[dayOfWeek])
             if loc.prices[dayOfWeek] == 'unspecified':
                 distPriceUnspecified.append(loc)
-        
+        #finding cheapest shop in a distance
         if options[2] == 1:
             list(distanceAndPrices).sort()
-            val = 0
             count = 0
             for i in range(distanceAndPrices):
                 for val in range(distanceCheck):
                     if distanceCheck[val].prices[dayOfWeek] == distanceAndPrices[i]:
-                        if not (distanceCheck in distPriceOutput):
+                        if not (distanceCheck[val] in distPriceOutput):
                             distPriceOutput.append(distanceCheck[val])
                             if (count==10 and i!=0) or (count>10 and i==1):
                                 break
                             count+=1
+        #finding most expensive shop in a distance
         if options[2] == 2:
             list(distanceAndPrices).sort(reverse = True)
-            val = 0
             count = 0
             for i in range(distanceAndPrices):
                 for val in range(distanceCheck):
@@ -498,7 +505,7 @@ def FindBestShop(YourLocation, options):
         if len(list(PricesOnly)) == 0:
             options = []
             return
-
+        #checking for recent delivery
         if options[1] == 1 and options[2] == 1:
             list(PricesOnly).sort()
             count = 0
@@ -610,6 +617,167 @@ def FindBestShop(YourLocation, options):
                 print("{} - {}: Distance: {} km, Price: {}, Delivery day: {}".format(i,SoonUnspecified[i].name, dist, SoonUnspecified[i].prices[dayOfWeek],
                 SoonUnspecified[i].delivery))
 
+    #checking for delivery, distance and price
+    if options[0]>0 and options[1] and options[2]: 
+        #geting recent delivery in a distance       
+        if options[1] == 1:
+            for i in range(deliveryRecent):
+                if deliveryRecent[i] in distanceCheck:
+                    distdelRecent.append(deliveryRecent[i])
+            if len(distdelRecent) == 0:
+                options = []
+                return
+        #geting soon delivery in a distance 
+        if options[1] == 2:
+            for i in range(deliverySoon):
+                if deliverySoon[i] in distanceCheck:
+                    distdelSoon.append(deliverySoon[i])
+            if len(distdelSoon) == 0:
+                options = []
+                return
+        #geting unspecified prices for soon delivery in a distance
+        if options[2] == 3 and options[1] == 2:
+            for i in range(distdelSoon):
+                if distdelSoon[i].prices[dayOfWeek] == 'unspecified':
+                    distdelSoonUnspecified.append(distdelSoon[i])
+            if len(distdelSoonUnspecified) == 0:
+                options = []
+                return
+            for i in range(distdelSoonUnspecified):
+                dist = GD((str(distdelSoonUnspecified[i].latitude),str(distdelSoonUnspecified[i].longitude)), (YourLocation.latitude, YourLocation.longitude)).km               
+                print("{} - {}: Distance: {} km, Price: {}, Delivery day: {}".format(i,distdelSoonUnspecified[i].name, dist, distdelSoonUnspecified[i].prices[dayOfWeek],
+                distdelSoonUnspecified[i].delivery))
+        #geting unspecified prices for recent delivery in a distance
+        if options[2] == 3 and options[1] == 1:
+            for i in range(distdelRecent):
+                if distdelRecent[i].prices[dayOfWeek] == 'unspecified':
+                    distdelRecentUnspecified.append(distdelRecent[i])
+            if len(distdelRecentUnspecified) == 0:
+                options = []
+                return
+            for i in range(distdelRecentUnspecified):
+                dist = GD((str(distdelRecentUnspecified[i].latitude),str(distdelRecentUnspecified[i].longitude)), (YourLocation.latitude, YourLocation.longitude)).km               
+                print("{} - {}: Distance: {} km, Price: {}, Delivery day: {}".format(i,distdelRecentUnspecified[i].name, dist, distdelRecentUnspecified[i].prices[dayOfWeek],
+                distdelRecentUnspecified[i].delivery))
+
+        #Recent delivery and expensive price in a distance
+        if options[2] == 2 and options[1] == 1:
+            for loc in distdelRecent:
+                if loc.prices[dayOfWeek] != 'unspecified':
+                    PricesOnly.add(loc.prices[dayOfWeek])
+            if len(list(PricesOnly)) == 0:
+                options = []
+                return
+            list(PricesOnly).sort(reverse = True)
+            count = 0
+            for i in range(PricesOnly):
+                for val in range(distdelRecent):
+                    if distdelRecent[val].prices[dayOfWeek] == PricesOnly[i]:
+                        if not (distdelRecent[val] in distdelRecentExp):
+                            distdelRecentExp.append(distdelRecent[val])
+                            if (count==10 and i!=0) or (count>10 and i==1):
+                                break
+                            count+=1
+            if len(distdelRecentExp) == 0:
+                options = []
+                return
+            for i in range(distdelRecentExp):
+                dist = GD((str(distdelRecentExp[i].latitude),str(distdelRecentExp[i].longitude)), (YourLocation.latitude, YourLocation.longitude)).km
+                if distdelRecentExp[i].price[dayOfWeek] == 'unspecified':                
+                    print("{} - {}: Distance: {} km, Price: {}, Delivery day: {}".format(i,distdelRecentExp[i].name, dist, distdelRecentExp[i].prices[dayOfWeek],
+                                                                                        distdelRecentExp[i].delivery))
+                elif len(distdelRecentExp[i].prices[dayOfWeek]) != 0:
+                    print("{} - {}: Distance: {} km, Price: {} per kg, Delivery day: {}".format(i,distdelRecentExp[i].name, dist, distdelRecentExp[i].prices[dayOfWeek], 
+                                                                                                distdelRecentExp[i].delivery))
+        #Recent delivery and cheap price in a distance
+        if options[2] == 1 and options[1] == 1:
+            for loc in distdelRecent:
+                if loc.prices[dayOfWeek] != 'unspecified':
+                    PricesOnly.add(loc.prices[dayOfWeek])
+            if len(list(PricesOnly)) == 0:
+                options = []
+                return
+            list(PricesOnly).sort(reverse = True)
+            count = 0
+            for i in range(PricesOnly):
+                for val in range(distdelRecent):
+                    if distdelRecent[val].prices[dayOfWeek] == PricesOnly[i]:
+                        if not (distdelRecent[val] in distdelRecentCheap):
+                            distdelRecentCheap.append(distdelRecent[val])
+                            if (count==10 and i!=0) or (count>10 and i==1):
+                                break
+                            count+=1
+            if len(distdelRecentCheap) == 0:
+                options = []
+                return
+            for i in range(distdelRecentCheap):
+                dist = GD((str(distdelRecentCheap[i].latitude),str(distdelRecentCheap[i].longitude)), (YourLocation.latitude, YourLocation.longitude)).km
+                if distdelRecentCheap[i].price[dayOfWeek] == 'unspecified':                
+                    print("{} - {}: Distance: {} km, Price: {}, Delivery day: {}".format(i,distdelRecentCheap[i].name, dist, distdelRecentCheap[i].prices[dayOfWeek],
+                                                                                        distdelRecentCheap[i].delivery))
+                elif len(distdelRecentCheap[i].prices[dayOfWeek]) != 0:
+                    print("{} - {}: Distance: {} km, Price: {} per kg, Delivery day: {}".format(i,distdelRecentCheap[i].name, dist, distdelRecentCheap[i].prices[dayOfWeek], 
+                                                                                                distdelRecentCheap[i].delivery))
+        #Soon delivery and expensive price in a distance
+        if options[2] == 2 and options[1] == 2:
+            for loc in distdelSoon:
+                if loc.prices[dayOfWeek] != 'unspecified':
+                    PricesOnly.add(loc.prices[dayOfWeek])
+            if len(list(PricesOnly)) == 0:
+                options = []
+                return
+            list(PricesOnly).sort()
+            count = 0
+            if options[1] == 2:
+                for i in range(PricesOnly):
+                    for val in range(distdelSoon):
+                        if distdelSoon[val].prices[dayOfWeek] == PricesOnly[i]:
+                            if not (distdelSoon[val] in distdelSoonExp):
+                                distdelSoonExp.append(distdelSoon[val])
+                                if (count==10 and i!=0) or (count>10 and i==1):
+                                    break
+                                count+=1
+            if len(distdelSoonExp) == 0:
+                options = []
+                return
+            for i in range(distdelSoonExp):
+                dist = GD((str(distdelSoonExp[i].latitude),str(distdelSoonExp[i].longitude)), (YourLocation.latitude, YourLocation.longitude)).km
+                if distdelSoonExp[i].price[dayOfWeek] == 'unspecified':                
+                    print("{} - {}: Distance: {} km, Price: {}, Delivery day: {}".format(i,distdelSoonExp[i].name, dist, distdelSoonExp[i].prices[dayOfWeek],
+                                                                                        distdelSoonExp[i].delivery))
+                elif len(distdelSoonExp[i].prices[dayOfWeek]) != 0:
+                    print("{} - {}: Distance: {} km, Price: {} per kg, Delivery day: {}".format(i,distdelSoonExp[i].name, dist, distdelSoonExp[i].prices[dayOfWeek], 
+                                                                                                distdelSoonExp[i].delivery))   
+        #Soon delivery and cheap price in a distance
+        if options[2] == 1 and options[1] == 2:
+            for loc in distdelSoon:
+                if loc.prices[dayOfWeek] != 'unspecified':
+                    PricesOnly.add(loc.prices[dayOfWeek])
+            if len(list(PricesOnly)) == 0:
+                options = []
+                return
+            list(PricesOnly).sort()
+            count = 0
+            if options[1] == 2:
+                for i in range(PricesOnly):
+                    for val in range(distdelSoon):
+                        if distdelSoon[val].prices[dayOfWeek] == PricesOnly[i]:
+                            if not (distdelSoon[val] in distdelSoonCheap):
+                                distdelSoonCheap.append(distdelSoon[val])
+                                if (count==10 and i!=0) or (count>10 and i==1):
+                                    break
+                                count+=1
+            if len(distdelSoonCheap) == 0:
+                options = []
+                return
+            for i in range(distdelSoonCheap):
+                dist = GD((str(distdelSoonCheap[i].latitude),str(distdelSoonCheap[i].longitude)), (YourLocation.latitude, YourLocation.longitude)).km
+                if distdelSoonCheap[i].price[dayOfWeek] == 'unspecified':                
+                    print("{} - {}: Distance: {} km, Price: {}, Delivery day: {}".format(i,distdelSoonCheap[i].name, dist, distdelSoonCheap[i].prices[dayOfWeek],
+                    distdelSoonCheap[i].delivery))
+                elif len(distdelSoonCheap[i].prices[dayOfWeek]) != 0:
+                    print("{} - {}: Distance: {} km, Price: {} per kg, Delivery day: {}".format(i, distdelSoonCheap[i].name, dist, distdelSoonCheap[i].prices[dayOfWeek], 
+                    distdelSoonCheap[i].delivery))
 
 def ChangeData(YourLocation):
     global addressList
